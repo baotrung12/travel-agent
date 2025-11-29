@@ -1,0 +1,338 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import ImagePicker from "./ImagePicker";
+import {ConfirmReadyModal} from "@/app/components/ConfirmReadyModal";
+import {Category} from "@/app/generated/prisma/enums";
+
+interface PastSchedule {
+  id: string | null;
+  date: string;
+  title: string;
+  description: string;
+  imageUrls: string[];
+}
+
+interface PastTour {
+  id: string;
+  title: string;
+  tourCode: string;
+  departureStart: string;
+  departureEnd: string;
+  duration: number;
+  destination: string;
+  category: Category;
+  price: number;
+  participants: number | null;
+  feedback: string | null;
+  tourImages: string[];
+  pastSchedule: PastSchedule[];
+}
+
+export default function EditPastTourForm({ tourId }: { tourId: string }) {
+  const [form, setForm] = useState<PastTour | null>(null);
+  const [newTourImages, setNewTourImages] = useState<File[]>([]);
+  const [scheduleFiles, setScheduleFiles] = useState<Record<number, File[]>>({});
+  const [isReady, setIsReady] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  // Load existing tour data
+  useEffect(() => {
+    const fetchTour = async () => {
+      const res = await fetch(`/api/admin/past-tours/${tourId}`);
+      const data = await res.json();
+      setForm(data);
+      setIsReady(data.ready);
+    };
+    fetchTour();
+  }, [tourId]);
+
+  const handleTourImagesChange = (files: File[], urls: string[]) => {
+    setNewTourImages(files);
+    setForm((prev) => prev ? { ...prev, tourImages: urls } : prev);
+  };
+
+  const handleScheduleImagesChange = (index: number, files: File[], urls: string[]) => {
+    setScheduleFiles((prev) => ({ ...prev, [index]: files }));
+    if (form) {
+      const updated = [...form.pastSchedule];
+      updated[index].imageUrls = urls;
+      setForm({ ...form, pastSchedule: updated });
+    }
+  };
+
+  const toggleReady = async () => {
+    const token = localStorage.getItem("adminToken");
+    const res = await fetch(`/api/admin/past-tours/${tourId}/ready`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ ready: !isReady }),
+    });
+
+    if (res.ok) {
+      setIsReady(!isReady);
+      setShowConfirm(false);
+      alert(`Tour đã được ${!isReady ? "đánh dấu sẵn sàng" : "gỡ sẵn sàng"}`);
+    } else {
+      const data = await res.json();
+      alert(data.error || "Thao tác thất bại");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form) return;
+
+    const formData = new FormData();
+    formData.append("title", form.title);
+    formData.append("tourCode", form.tourCode);
+    formData.append("departureStart", form.departureStart);
+    formData.append("departureEnd", form.departureEnd);
+    formData.append("duration", String(form.duration));
+    formData.append("price", String(form.price));
+    formData.append("tourImages", form.tourImages);
+    formData.append("feedback", form.feedback || "")
+    formData.append("destination", form.destination);
+    formData.append("category", form.category);
+    if (form.participants) formData.append("participants", String(form.participants));
+    if (form.feedback) formData.append("feedback", form.feedback);
+
+    // stringify schedule (bao gồm URL ảnh cũ mà bạn muốn giữ lại)
+    const scheduleWithoutFiles = form.pastSchedule.map((day) => ({
+      id: day.id,
+      date: day.date,
+      title: day.title,
+      description: day.description,
+      imageUrls: day.imageUrls,
+    }));
+    formData.append("pastSchedule", JSON.stringify(scheduleWithoutFiles));
+
+    // append file ảnh mới cho tour
+    newTourImages.forEach((file: File) => {
+      formData.append("images", file);
+    });
+
+    // append file ảnh mới cho từng ngày schedule từ state scheduleFiles
+    Object.entries(scheduleFiles).forEach(([idx, files]) => {
+      files.forEach((file) => {
+        formData.append(`scheduleImages_${idx}`, file);
+      });
+    });
+
+    await fetch(`/api/admin/past-tours/${tourId}`, {
+      method: "PATCH",
+      body: formData as BodyInit,
+    });
+
+    alert("Past tour updated!");
+  };
+
+  if (!form) return <p>Loading...</p>;
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 p-6 border rounded">
+      <h2 className="text-xl font-bold mb-4">Edit Past Tour</h2>
+
+      <div>
+        <label className="block font-semibold mb-1">Title</label>
+        <input
+          type="text"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          className="border px-3 py-2 w-full"
+        />
+      </div>
+
+      <div className="flex items-center gap-3 mt-2">
+        <span>
+          Trạng thái:{" "}
+          {isReady ? (
+            <span className="text-green-600 font-bold">Đã sẵn sàng</span>
+          ) : (
+            <span className="text-red-600 font-bold">Chưa sẵn sàng</span>
+          )}
+        </span>
+
+        <button
+          type="button"
+          onClick={() => setShowConfirm(true)}
+          className="px-3 py-1 rounded border text-sm bg-blue-600 text-white"
+        >
+          {isReady ? "Gỡ sẵn sàng" : "Đánh dấu sẵn sàng"}
+        </button>
+      </div>
+
+      {/* Destination (optional) */}
+      <div>
+        <label htmlFor="destination">Điểm đến</label>
+        <input
+          type="text"
+          id="destination"
+          className="w-full border border-gray-400 rounded-md p-2"
+          value={form.destination}
+          name="destination"
+          onChange={(e) => setForm({ ...form, destination: e.target.value })}
+          placeholder="Ví dụ: Đà Nẵng"
+        />
+      </div>
+
+      {/* Category (enum) */}
+      <div>
+        <label htmlFor="category">Loại tour</label>
+        <select
+          id="category"
+          name="category"
+          className="w-full border border-gray-400 rounded-md p-2"
+          defaultValue={Category.STUDENT}
+          onChange={(e) =>
+            setForm({...form, category: e.target.value as Category}) // ✅ cast to enum
+          }
+        >
+          <option value={Category.STUDENT}>Du lịch trải nghiệm cho HS</option>
+          <option value={Category.TEACHER}>Du lịch giành cho giáo viên</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Tour Code</label>
+        <input
+          type="text"
+          value={form.tourCode}
+          onChange={(e) => setForm({ ...form, tourCode: e.target.value })}
+          className="border px-3 py-2 w-full"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block font-semibold mb-1">Departure Start</label>
+          <input
+            type="date"
+            value={form.departureStart.split("T")[0]}
+            onChange={(e) => setForm({ ...form, departureStart: e.target.value })}
+            className="border px-3 py-2 w-full"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">Departure End</label>
+          <input
+            type="date"
+            value={form.departureEnd.split("T")[0]}
+            onChange={(e) => setForm({ ...form, departureEnd: e.target.value })}
+            className="border px-3 py-2 w-full"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Duration (days)</label>
+        <input
+          type="number"
+          value={form.duration}
+          onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
+          className="border px-3 py-2 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Price</label>
+        <input
+          type="number"
+          value={form.price}
+          onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+          className="border px-3 py-2 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Participants</label>
+        <input
+          type="number"
+          value={form.participants ?? ""}
+          onChange={(e) => setForm({ ...form, participants: Number(e.target.value) })}
+          className="border px-3 py-2 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Feedback</label>
+        <textarea
+          value={form.feedback ?? ""}
+          onChange={(e) => setForm({ ...form, feedback: e.target.value })}
+          className="border px-3 py-2 w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-1">Tour Images</label>
+        <ImagePicker initialFiles={form.tourImages} onChange={handleTourImagesChange} />
+      </div>
+
+      <h3 className="text-lg font-semibold">Schedule</h3>
+      {form.pastSchedule.map((day, index) => (
+        <div key={index} className="border p-4 mb-4 rounded">
+          <label className="block font-semibold mb-1">Date</label>
+          <input
+            type="date"
+            value={day.date.split("T")[0]}
+            onChange={(e) => {
+              const updated = [...form.pastSchedule];
+              updated[index].date = e.target.value;
+              setForm({ ...form, pastSchedule: updated });
+            }}
+            className="border px-3 py-2 w-full mb-2"
+          />
+
+          <label className="block font-semibold mb-1">Location</label>
+          <input
+            type="text"
+            value={day.title}
+            onChange={(e) => {
+              const updated = [...form.pastSchedule];
+              updated[index].title = e.target.value;
+              setForm({ ...form, pastSchedule: updated });
+            }}
+            className="border px-3 py-2 w-full mb-2"
+          />
+
+          <label className="block font-semibold mb-1">Description</label>
+          <textarea
+            value={day.description}
+            onChange={(e) => {
+              const updated = [...form.pastSchedule];
+              updated[index].description = e.target.value;
+              setForm({ ...form, pastSchedule: updated });
+            }}
+            className="border px-3 py-2 w-full mb-2"
+          />
+
+          <label className="block font-semibold mb-1">Schedule Images</label>
+          <ImagePicker
+            initialFiles={day.imageUrls}
+            onChange={(files, urls) => handleScheduleImagesChange(index, files, urls)}
+          />
+        </div>
+      ))}
+
+      {/* Confirmation Popup */}
+      {showConfirm && (
+        <ConfirmReadyModal
+          show={showConfirm}
+          message={
+            <p>
+              Bạn có chắc muốn{" "}
+              <strong>{!isReady ? "đánh dấu là sẵn sàng" : "gỡ sẵn sàng"}</strong>{" "}
+              cho tour này?
+            </p>
+          }
+          onCancel={() => setShowConfirm(false)}
+          onConfirm={toggleReady}
+        />
+      )}
+
+      <button type="submit" className="btn btn-primary">Update Past Tour</button>
+    </form>
+  );
+}

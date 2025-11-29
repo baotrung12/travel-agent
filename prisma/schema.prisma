@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Category {
+  STUDENT
+  TEACHER
+}
+
+model Tour {
+  id             String   @id @default(uuid())
+  title          String
+  slug           String
+  tourCode       String
+  summary        String
+  promotion      String
+  price          Int
+  departurePoint String
+  departureStart DateTime?
+  departureEnd   DateTime?
+  duration       String
+  tourSchedule   TourSchedule[]
+  imageUrls      String[]
+  ready         Boolean  @default(false)
+  destination    String?
+  category       Category @default(STUDENT)
+  createdAt      DateTime @default(now())
+}
+
+model TourSchedule {
+  id          String   @id @default(uuid())
+  date        DateTime
+  title       String
+  description String
+  tourId      String
+  tour        Tour     @relation(fields: [tourId], references: [id])
+}
+
+model PastTour {
+  id             String   @id @default(uuid())
+  title          String
+  slug           String
+  tourCode       String
+  departureStart DateTime?
+  departureEnd   DateTime?
+  duration       String
+  price          Int?
+  participants   Int?
+  feedback       String?
+  tourImages      String[]
+  pastSchedule   PastTourSchedule[]
+  ready         Boolean  @default(false)
+  destination    String?
+  category       Category @default(STUDENT)
+  createdAt      DateTime @default(now())
+}
+
+model PastTourSchedule {
+  id          String   @id @default(uuid())
+  date        DateTime
+  title       String
+  description String
+  imageUrls   String[]
+  pastTour    PastTour @relation(fields: [pastTourId], references: [id])
+  pastTourId  String
+}
