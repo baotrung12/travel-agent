@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   const tourCode = formData.get("tourCode") as string;
   const departureStart = formData.get("departureStart") as string;
   const departureEnd = formData.get("departureEnd") as string;
-  const duration = formData.get("duration");
+  const duration = formData.get("duration") as string;
   const price = Number(formData.get("price"));
   const participants = formData.get("participants")
     ? Number(formData.get("participants"))

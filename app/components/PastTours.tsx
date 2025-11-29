@@ -14,7 +14,7 @@ export default function PastTours() {
     fetchData();
   }, []);
 
-  const [activeTab, setActiveTab] = useState<Category.STUDENT | Category.TEACHER>(Category.STUDENT);
+  const [activeTab, setActiveTab] = useState<Category>(Category.STUDENT);
 
   const filteredTours = pastTours.filter((tour) => tour.category === activeTab);
 

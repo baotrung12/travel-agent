@@ -12,7 +12,7 @@ interface PastSchedule {
   imageUrls: string[];
 }
 
-interface PastTour {
+export interface PastTour {
   id: string;
   title: string;
   tourCode: string;
@@ -92,7 +92,9 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
     formData.append("departureEnd", form.departureEnd);
     formData.append("duration", String(form.duration));
     formData.append("price", String(form.price));
-    formData.append("tourImages", form.tourImages);
+    form.tourImages.forEach((file) => {
+      formData.append("tourImages", file);
+    });
     formData.append("feedback", form.feedback || "")
     formData.append("destination", form.destination);
     formData.append("category", form.category);

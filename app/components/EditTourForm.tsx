@@ -2,8 +2,34 @@
 import React, { useState } from "react";
 import {ConfirmReadyModal} from "@/app/components/ConfirmReadyModal";
 import {Category} from "@/app/generated/prisma/enums";
+import {TourSchedule} from "@/app/components/TourSchedule";
 
-export default function EditTourForm({ tour, onClose }) {
+export interface Tour {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  promotion: string;
+  tourSchedule: TourSchedule[];
+  departureStart: string;
+  departureEnd: string;
+  departurePoint: string;
+  duration: string;
+  tourCode: string;
+  price: string;
+  ready: boolean;
+  destination: string;
+  category: Category;
+  imageUrls: string[];
+}
+
+
+interface EditTourFormProps {
+  tour: Tour;
+  onClose: () => void;
+}
+
+export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
   const [form, setForm] = useState({
     title: tour.title,
     slug: tour.slug,
@@ -29,14 +55,8 @@ export default function EditTourForm({ tour, onClose }) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setForm((prev) => ({ ...prev, images: Array.from(e.target.files) }));
+      setForm((prev) => ({ ...prev,  images: Array.from(e.target.files!) }));
     }
-  };
-
-  const handleScheduleChange = (index: number, field: string, value: string) => {
-    const updated = [...form.tourSchedule];
-    updated[index] = { ...updated[index], [field]: value };
-    setForm((prev) => ({ ...prev, tourSchedule: updated }));
   };
 
   const addScheduleItem = () => {
@@ -86,7 +106,7 @@ export default function EditTourForm({ tour, onClose }) {
     formData.append("duration", form.duration);
     formData.append("price", form.price);
     formData.append("tourSchedule", JSON.stringify(sortedSchedule));
-    formData.append("tourImages", form.imageUrls);
+    form.imageUrls.forEach((url) => formData.append("tourImages", url));
     formData.append("destination", form.destination);
     formData.append("category", form.category);
     form.images.forEach((file) => formData.append("images", file));

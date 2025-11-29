@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         children
       ) : (
         <div className="flex items-center justify-center h-screen">
-          <AdminAuthPopup onSuccess={() => setAuthenticated(true)} />
+          <AdminAuthPopup />
         </div>
       )}
     </div>

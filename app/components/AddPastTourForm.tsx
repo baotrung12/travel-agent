@@ -5,8 +5,23 @@ import slugify from "slugify";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import {Category} from "@/app/generated/prisma/enums";
 
+interface FormState {
+  title: string;
+  tourCode: string;
+  departureStart: string;
+  departureEnd: string;
+  duration: string;
+  price: string;
+  participants: string;
+  feedback: string;
+  destination: string;
+  category: Category;        // ✅ allow both STUDENT and TEACHER
+  tourImages: File[];
+  pastSchedule: { date: string; title: string; description: string; imageFiles: File[] }[];
+}
+
 export default function AddPastTourForm() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     title: "",
     tourCode: "",
     departureStart: "",
@@ -182,9 +197,10 @@ export default function AddPastTourForm() {
                 name="category"
                 className="w-full border border-gray-400 rounded-md p-2"
                 defaultValue={Category.STUDENT}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value as Category }) // ✅ cast to enum
-                }
+                value={form.category}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  setForm({ ...form, category: e.target.value as Category });
+                }}
         >
           <option value={Category.STUDENT}>Du lịch trải nghiệm cho HS</option>
           <option value={Category.TEACHER}>Du lịch giành cho giáo viên</option>

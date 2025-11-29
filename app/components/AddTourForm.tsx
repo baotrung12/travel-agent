@@ -5,8 +5,25 @@ import { PlusIcon } from "@heroicons/react/24/solid";
 import {TrashIcon} from "@heroicons/react/16/solid";
 import {Category} from "@/app/generated/prisma/enums";
 
+interface FormState {
+  title: string;
+  slug: string;
+  summary: string;
+  promotion: string;
+  tourSchedule: { date: string; title: string; description: string }[];
+  departureStart: string;
+  departureEnd: string;
+  departurePoint: string;
+  duration: string;
+  tourCode: string;
+  price: string;
+  destination: string;
+  category: Category;   // ✅ allow both STUDENT and TEACHER
+  images: File[];
+}
+
 export default function AddTourForm() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     title: "",
     slug: "",
     summary: "",
@@ -60,25 +77,10 @@ export default function AddTourForm() {
     return `TOUR-${year}-${dd}-${mm}-${random}`;
   };
 
-  const handleScheduleChange = (index: number, field: string, value: string) => {
-    const updated = [...form.tourSchedule];
-    updated[index][field] = value;
-    setForm({ ...form, tourSchedule: updated });
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setForm({ ...form, images: Array.from(e.target.files) });
     }
-  };
-
-  const addScheduleRow = () => {
-    setForm({ ...form, tourSchedule: [...form.tourSchedule, { date: "", title: "", description: ""}] });
-  };
-
-  const formatCurrency = (value: string) => {
-    const number = parseInt(value.replace(/\D/g, "") || "0");
-    return number.toLocaleString("vi-VN");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

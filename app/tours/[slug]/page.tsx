@@ -6,51 +6,9 @@ import RelatedTours from "@/app/components/RelatedTours";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import {notFound} from "next/navigation";
 import {headers} from "next/headers";
+import {Tour} from "@/app/components/EditTourForm";
 
 // Mock data (later you can fetch from Supabase or API)
-const tours = [
-  {
-    slug: "nha-trang-xua",
-    title: "NHA TRANG XƯA – LÀNG YẾN MAI SINH – ĐỐC LẾT – I RESORT",
-    images: [
-      "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang1.jpg",
-      "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang2.jpg",
-      "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang3.jpg",
-      "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang4.jpg",
-      "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/quynhon1.jpg",
-    ],
-    departure: "TP Hồ Chí Minh",
-    promotion: "Miễn phí: Xe đón khách tận nơi tại các quận trung tâm TP.HCM",
-    itinerary: [
-      "Tham quan các địa điểm nổi bật tại Nha Trang Xưa",
-      "Tham quan Làng Yến Mai Sinh – nơi nuôi chim yến và khai thác tổ yến",
-      "Tham quan bãi biển Đốc Lết – một trong những bãi biển đẹp nhất Nha Trang",
-      "Thư giãn tại I Resort với dịch vụ tắm bùn khoáng nóng",
-    ],
-    price: "3,990,000 đ",
-  }
-];
-
-const schedule = [
-  {
-    day: "Ngày 01",
-    title: "TP. HỒ CHÍ MINH – NHA TRANG",
-    description:
-      "Đón du khách tại điểm hẹn... nghỉ ngơi. Buổi chiều tham quan Chùa Long Sơn và Nhà thờ Núi...",
-  },
-  {
-    day: "Ngày 02",
-    title: "NHA TRANG - DỐC LẾT",
-    description:
-      "Tham quan bãi biển Dốc Lết... tháp bà Ponagar và suối khoáng nóng Tháp Bà...",
-  },
-  {
-    day: "Ngày 03",
-    title: "NHA TRANG – I RESORT",
-    description:
-      "Tham quan I Resort... Viện Hải Dương Học và Chùa Từ Vân. Tối có thể tham gia chương trình BBQ và lửa trại.",
-  },
-];
 
 const relatedTours = [
   {
@@ -114,7 +72,7 @@ export default async function TourDetailPage({params}: { params: Promise<{ slug:
 
   if (!res.ok) return notFound();
 
-  const tour = await res.json();
+  const tour: Tour = await res.json();
 
   return (
     <section className="bg-white py-12 px-6 max-w-5xl mx-auto">
@@ -150,7 +108,7 @@ export default async function TourDetailPage({params}: { params: Promise<{ slug:
       {/* Overview */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-2">Tổng quan</h2>
-        <p className="text-gray-700">Điểm khởi hành: <strong>{tour.departure}</strong></p>
+        <p className="text-gray-700">Điểm khởi hành: <strong>{tour.departureStart}</strong></p>
       </div>
 
       {/* Promotion */}

@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react";
-import EditTourForm from "@/app/components/EditTourForm";
+import EditTourForm, {Tour} from "@/app/components/EditTourForm";
 import Modal from "@/app/components/Modal";
 
 export function ManageTours({ title }: { title: string }) {
-  const [tours, setTours] = useState([]);
+  const [tours, setTours] = useState<Tour[]>([]);
 
-  const [editingTour, setEditingTour] = useState(null);
+  const [editingTour, setEditingTour] = useState<Tour | null>();
 
   useEffect(() => {
     const fetchTours = async () => {
@@ -35,7 +35,7 @@ export function ManageTours({ title }: { title: string }) {
         {tours.map((tour) => (
           <tr key={tour.id} className="border-t">
             <td className="p-2">{tour.title}</td>
-            <td className="p-2">{tour.date}</td>
+            <td className="p-2">{tour.departureStart}</td>
             <td className="p-2">{tour.duration}</td>
             <td className="p-2">{tour.departurePoint}</td>
             <td className="p-2 space-x-2">

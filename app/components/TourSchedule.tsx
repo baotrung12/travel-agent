@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
-type ScheduleItem = {
-  day: string;
+export interface TourSchedule {
+  date: string;
   title: string;
   description: string;
-};
+}
 
-export default function TourSchedule({ schedule }: { schedule: ScheduleItem[] }) {
+export default function TourSchedule({ schedule }: { schedule: TourSchedule[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
@@ -29,7 +29,7 @@ export default function TourSchedule({ schedule }: { schedule: ScheduleItem[] })
                 className="w-full text-left px-4 py-3 bg-gray-100 hover:bg-gray-200 flex justify-between items-center"
               >
                 <span className="font-semibold text-gray-800">
-                  {item.day}: {item.title}
+                  {item.date}: {item.title}
                 </span>
                 <span className="text-blue-600">
                   {isOpen ? <FaChevronUp /> : <FaChevronDown />}

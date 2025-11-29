@@ -8,10 +8,6 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  const session = await getServerSession();
-  if (!session || !session.user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const tour = await prisma.tour.findUnique({
     where: { id: id },

@@ -3,12 +3,11 @@
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import PastTourHeroHeader from "@/app/components/PastTourHeroHeader";
 import PastTourGallery from "@/app/components/PastTourGallery";
-import Testimonials from "@/app/components/Testimonials";
 import {headers} from "next/headers";
 import {notFound} from "next/navigation";
-import {FaChevronDown, FaChevronUp} from "react-icons/fa";
 import {Category} from "@/app/generated/prisma/enums";
 import {buildDuration} from "@/utils/dateUtils";
+import {PastTour} from "@/app/components/EditPastTourForm";
 
 type Testimonial = {
   name: string;
@@ -19,53 +18,6 @@ type Testimonial = {
 };
 
 export default async function PastTourDetailPage({params}: { params: Promise<{ slug: string }> }) {
-  // Mocked data (replace with Supabase fetch by slug)
-  const tourTitle = "Nha Trang tháng 3/2024";
-  const subtitle = "Khám phá hành trình đáng nhớ cùng 40 khách hàng thân thiết.";
-  const heroImage =
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang-hero.jpg";
-
-  const images = [
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang1.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang2.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang3.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang4.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang5.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang6.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang7.jpg",
-    "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/nhatrang8.jpg",
-  ];
-
-  const description =
-    "Biển xanh, cát trắng, ẩm thực phong phú và những hoạt động gắn kết đã tạo nên một hành trình đáng nhớ. Đoàn đã tham quan I-Resort, cáp treo, bãi biển Dốc Lết, Viện Hải Dương Học và trải nghiệm BBQ bãi biển. Dịch vụ chuyên nghiệp, lịch trình cân đối và sự nhiệt tình của đội ngũ đã mang đến trải nghiệm tuyệt vời cho tất cả thành viên.";
-
-  const testimonials: Testimonial[] = [
-    {
-      name: "Nguyễn Hoàng Long",
-      tourName: "Nha Trang tháng 3/2024",
-      avatarUrl:
-        "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/avatar-long.jpg",
-      quote:
-        "Chuyến đi Nha Trang thật tuyệt vời! Kỷ niệm đáng nhớ, dịch vụ chuyên nghiệp và chu đáo. Chắc chắn sẽ đăng ký tour tiếp theo.",
-    },
-    {
-      name: "Trần Thu Hà",
-      tourName: "Nha Trang tháng 3/2024",
-      avatarUrl:
-        "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/avatar-ha.jpg",
-      quote:
-        "Lịch trình hợp lý, HDV thân thiện, khách sạn thoải mái. Đặc biệt thích trải nghiệm tắm bùn và BBQ bãi biển.",
-    },
-    {
-      name: "Phạm Quốc Anh",
-      tourName: "Nha Trang tháng 3/2024",
-      avatarUrl:
-        "https://hbzcurpwlhgkxsuikxdw.supabase.co/storage/v1/object/public/quangtrung/avatar-anh.jpg",
-      quote:
-        "Công ty tổ chức rất chuyên nghiệp. Gia đình tôi ai cũng hài lòng, các bé rất thích đi cáp treo và tắm biển.",
-    },
-  ];
-
   const {slug} = await params;
 
   // 2) Build a valid absolute base URL for server-side fetch
@@ -92,10 +44,10 @@ export default async function PastTourDetailPage({params}: { params: Promise<{ s
   console.log("Fetch result: ", res);
   if (!res.ok) return notFound();
 
-  const tour = await res.json();
+  const tour: PastTour = await res.json();
   const stats = [
     {label: "Số khách", value: tour.participants?.toString() ?? "N/A"},
-    {label: "Thời gian", value: buildDuration(tour.departureStart!, tour.departureEnd!)},
+    {label: "Thời gian", value: buildDuration(new Date(tour.departureStart), new Date(tour.departureEnd))},
     { label: "Điểm đến", value: tour.destination ?? "N/A" },
     { label: "Loại tour", value: tour.category },
   ];
