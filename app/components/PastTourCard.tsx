@@ -1,7 +1,4 @@
 import Link from "next/link";
-import {Category} from "@/app/generated/prisma/enums";
-import {ArrowRightIcon} from "@heroicons/react/16/solid";
-import {buildDuration} from "@/utils/dateUtils";
 
 export default function PastTourCard({ tour }: { tour: any }) {
 
@@ -19,9 +16,12 @@ export default function PastTourCard({ tour }: { tour: any }) {
           <h3 className="text-md font-semibold mt-3 text-left">{tour.title}</h3>
           <p className="text-sm text-gray-600 text-left">Mã tour: <b>{tour.tourCode}</b></p>
           <p className="text-sm text-left text-gray-600 text-left space-x-2">
-            Thời gian: <b>{buildDuration(tour.departureStart, tour.departureEnd)}</b>
+            Thời gian: {tour.departureStart && tour.departureEnd
+            ? <b>buildDuration(new Date(tour.departureStart), new Date(tour.departureEnd))</b>
+            : <b>"Chưa xác định"</b>}
+
           </p>
-          <p className="text-green-600 font-bold mt-2 text-left">{label}</p>
+          <p className="text-green-600 font-bold mt-2 text-left">{tour.category}</p>
         </div>
       </div>
     </Link>

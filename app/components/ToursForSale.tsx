@@ -20,9 +20,11 @@ export default function ToursForSale() {
     <section className="py-16 bg-white" id="tourForSale">
       <div className="max-w-6xl mx-auto px-6 text-center">
         <h2 className="text-3xl font-bold mb-6">✨ Chùm tour phổ biến</h2>
-        {tours.map((tour) => (
-          <PastTourCard tour={tour} />
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {tours.map((tour) => (
+            <TourCard tour={tour} />
+          ))}
+        </div>
       </div>
     </section>
   );

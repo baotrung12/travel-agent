@@ -169,9 +169,9 @@ export default async function TourDetailPage({params}: { params: Promise<{ slug:
           {
             title: "Giấy tờ tùy thân",
             content:
-              "·   Du khách mang theo giấy CCCD hoặc Hộ chiếu. Đối với du khách là Việt kiều, Quốc tế nhập cảnh Việt Nam bằng visa rời, vui lòng mang theo visa khi đăng ký và đi tour.\n" +
+              "Du khách mang theo giấy CCCD hoặc Hộ chiếu. Đối với du khách là Việt kiều, Quốc tế nhập cảnh Việt Nam bằng visa rời, vui lòng mang theo visa khi đăng ký và đi tour.\n" +
               "\n" +
-              "·   Khách lớn tuổi (từ 70 tuổi trở lên), khách tàn tật tham gia tour, phải có thân nhân đi kèm và cam kết đảm bảo đủ sức khỏe khi tham gia tour du lịch.\n" +
+              "Khách lớn tuổi (từ 70 tuổi trở lên), khách tàn tật tham gia tour, phải có thân nhân đi kèm và cam kết đảm bảo đủ sức khỏe khi tham gia tour du lịch.\n" +
               "\n" +
               "·   Trẻ em dưới 14 tuổi khi đi tour phải mang theo Giấy khai sinh hoặc Hộ chiếu. Trẻ em từ 14 tuổi trở lên phải mang theo giấy CCCD hoặc Hộ chiếu riêng.\n" +
               "\n" +

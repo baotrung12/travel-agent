@@ -38,7 +38,10 @@ export default function TourSection({ tours }: { tours: PastTour[] }) {
             <img src={tour.tourImages[0]} alt={tour.title} className="w-1/3 h-full object-cover" />
             <div className="flex-1 p-4 flex flex-col items-start">
               <h3 className="text-sm font-semibold text-gray-800 mb-2 text-left">{tour.title}</h3>
-              <p className="text-xs text-gray-600 mb-3">Thời gian: <b>{buildDuration(new Date(tour.departureStart), new Date(tour.departureEnd))}</b></p>
+              <p className="text-xs text-gray-600 mb-3">Thời gian: {tour.departureStart && tour.departureEnd
+                ? buildDuration(new Date(tour.departureStart), new Date(tour.departureEnd))
+                : "Chưa xác định"}
+              </p>
               <div className="flex items-center justify-between w-full">
                 <span className="text-xs font-semibold text-sky-600">Học tập trải nghiệm cho học sinh</span>
                 <Link href={`/past-tours/${tour.slug}`}>
@@ -58,7 +61,10 @@ export default function TourSection({ tours }: { tours: PastTour[] }) {
             <img src={tour.tourImages[0]} alt={tour.title} className="w-1/3 h-32 object-cover" />
             <div className="flex-1 p-4 flex flex-col items-start">
               <h3 className="text-sm font-semibold text-gray-800 mb-2 text-left">{tour.title}</h3>
-              <p className="text-xs text-gray-600 mb-3">Thời gian: {buildDuration(new Date(tour.departureStart), new Date(tour.departureEnd))}</p>
+              <p className="text-xs text-gray-600 mb-3">Thời gian: {tour.departureStart && tour.departureEnd
+                ? buildDuration(new Date(tour.departureStart), new Date(tour.departureEnd))
+                : "Chưa xác định"}
+              </p>
               <div className="flex items-center justify-between w-full">
                 <span className="text-xs font-semibold text-sky-600">Tham quan cho giáo viên</span>
                 <Link href={`/past-tours/${tour.slug}`}>

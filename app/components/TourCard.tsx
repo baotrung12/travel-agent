@@ -9,7 +9,7 @@ export default function TourCard({ tour }: { tour: any }) {
       <div className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition duration-300">
         <div className="h-[250px] w-full">
           <img
-            src={tour.tourImages?.[0] || "/placeholder.jpg"}
+            src={tour.imageUrls?.[0] || "/placeholder.jpg"}
             alt={tour.title}
             className="w-full h-full object-cover"
           />

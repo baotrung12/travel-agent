@@ -106,7 +106,7 @@ export default function AddTourForm() {
       formData.append("images", file);
     });
 
-    const response = await fetch("/api/tours", {
+    const response = await fetch("/api/admin/tours", {
       method: "POST",
       body: formData as BodyInit,
     });
@@ -203,6 +203,9 @@ export default function AddTourForm() {
         >
           <option value={Category.STUDENT}>Du lịch trải nghiệm cho HS</option>
           <option value={Category.TEACHER}>Du lịch giành cho giáo viên</option>
+          <option value={Category.LONG_TRIP}>Du lịch dài ngày</option>
+          <option value={Category.SHORT_TRIP}>Du lịch ngắn ngày</option>
+          <option value={Category.SPECIAL}>Tour đặc biệt</option>
         </select>
       </div>
 
