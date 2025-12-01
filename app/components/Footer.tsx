@@ -8,7 +8,7 @@ export default function Footer() {
         {/* Left: Logo */}
         <div className="mb-6 md:mb-0 flex items-center space-x-3">
           <img src="/logo.png" alt="Company Logo" className="h-12 w-auto" />
-          <span className="text-xl font-bold">SAGOTOURS</span>
+          <span className="text-xl font-bold">EDUTOUR</span>
         </div>
 
         {/* Right: Menu & Links */}
@@ -18,9 +18,9 @@ export default function Footer() {
             <h4 className="font-semibold mb-2">Menu</h4>
             <ul className="space-y-1">
               <li><a href="/" className="hover:text-blue-400">Trang chủ</a></li>
-              <li><a href="/tours" className="hover:text-blue-400">Tour</a></li>
-              <li><a href="/destinations" className="hover:text-blue-400">Điểm đến</a></li>
-              <li><a href="/contact" className="hover:text-blue-400">Liên hệ</a></li>
+              <li><a href="/#tourForSale" className="hover:text-blue-400">Tour nổi bật</a></li>
+              <li><a href="/#popularPlaces" className="hover:text-blue-400">Điểm đến</a></li>
+              <li><a href="/#contactUs" className="hover:text-blue-400">Liên hệ</a></li>
             </ul>
           </div>
 
@@ -28,7 +28,7 @@ export default function Footer() {
           <div className="mt-6 md:mt-0">
             <h4 className="font-semibold mb-2">Tham khảo</h4>
             <ul className="space-y-1">
-              <li><a href="/about" className="hover:text-blue-400">Về chúng tôi</a></li>
+              <li><a href="/#contactUs" className="hover:text-blue-400">Liên hệ chúng tôi</a></li>
               <li><a href="/policy" className="hover:text-blue-400">Chính sách</a></li>
               <li><a href="/faq" className="hover:text-blue-400">Câu hỏi thường gặp</a></li>
             </ul>
@@ -38,7 +38,7 @@ export default function Footer() {
 
       {/* Bottom line */}
       <div className="mt-8 text-center text-gray-400 text-sm">
-        © {new Date().getFullYear()} SAGOTOURS. All rights reserved.
+        © {new Date().getFullYear()} EDUTOUR. All rights reserved.
       </div>
     </footer>
   );

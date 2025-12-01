@@ -6,7 +6,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-md fixed w-full top-0 z-50">
+    <nav className="bg-sky-600 text-white font-semibold shadow-md fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
@@ -20,11 +20,11 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8 items-center">
-            <Link href="/" className="hover:text-blue-600">Home</Link>
-            <Link href="/destinations" className="hover:text-blue-600">Destinations</Link>
-            <Link href="/packages" className="hover:text-blue-600">Packages</Link>
-            <Link href="/about" className="hover:text-blue-600">About</Link>
-            <Link href="/contact" className="hover:text-blue-600">Contact</Link>
+            <Link href="/" className="hover:text-gray-100">Trang chủ</Link>
+            <Link href="/#tourForSale" className="hover:text-gray-100">Tour nổi bật</Link>
+            <Link href="/#pastTours" className="hover:text-gray-100">Tour trường học</Link>
+            <Link href="/#popularPlaces" className="hover:text-gray-100">Địa điểm du lịch</Link>
+            <Link href="/#contactUs" className="hover:text-gray-100">Liên hệ</Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -42,11 +42,11 @@ export default function Navbar() {
       {/* Mobile Dropdown */}
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg">
-          <Link href="/" className="block px-4 py-2 hover:bg-gray-100">Home</Link>
-          <Link href="/destinations" className="block px-4 py-2 hover:bg-gray-100">Destinations</Link>
-          <Link href="/packages" className="block px-4 py-2 hover:bg-gray-100">Packages</Link>
-          <Link href="/about" className="block px-4 py-2 hover:bg-gray-100">About</Link>
-          <Link href="/contact" className="block px-4 py-2 hover:bg-gray-100">Contact</Link>
+          <Link href="/" className="hover:text-gray-100">Trang chủ</Link>
+          <Link href="/#tourForSale" className="hover:text-gray-100">Tour nổi bật</Link>
+          <Link href="/#pastTours" className="hover:text-gray-100">Tour trường học</Link>
+          <Link href="/#popularPlaces" className="hover:text-gray-100">Địa điểm du lịch</Link>
+          <Link href="/#contactUs" className="hover:text-gray-100">Liên hệ</Link>
         </div>
       )}
     </nav>

@@ -2,7 +2,7 @@
 
 export default function ContactForm() {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white" id="contactUs">
       <div className="max-w-4xl mx-auto px-6">
         <h2 className="text-3xl font-bold text-center mb-12">Liên Hệ Với Chúng Tôi</h2>
         <form className="bg-white shadow-md rounded-lg p-8 space-y-6">

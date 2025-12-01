@@ -16,6 +16,9 @@ datasource db {
 enum Category {
   STUDENT
   TEACHER
+  SHORT_TRIP
+  LONG_TRIP
+  SPECIAL
 }
 
 model Tour {
