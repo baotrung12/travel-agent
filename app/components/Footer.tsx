@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
 
         {/* Left: Logo */}
-        <div className="mb-6 md:mb-0 flex items-center space-x-3">
+        <div className="mb-6 md:mb-0 flex flex-col items-center space-x-3">
           <img src="/logo.png" alt="Company Logo" className="h-12 w-auto" />
           <span className="text-xl font-bold">EDUTOUR</span>
         </div>
