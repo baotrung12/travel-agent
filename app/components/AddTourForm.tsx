@@ -1,9 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import {useEffect, useState} from "react";
 import slugify from "slugify";
-import { PlusIcon } from "@heroicons/react/24/solid";
-import {TrashIcon} from "@heroicons/react/16/solid";
+import {PlusIcon} from "@heroicons/react/24/solid";
 import {Category} from "@/app/generated/prisma/enums";
+import StarterKit from "@tiptap/starter-kit";
+import {TextStyleKit} from '@tiptap/extension-text-style'
+import ScheduleItem from "@/app/components/ScheduleItem";
 
 interface FormState {
   title: string;
@@ -21,6 +23,9 @@ interface FormState {
   category: Category;   // ✅ allow both STUDENT and TEACHER
   images: File[];
 }
+
+const extensions = [TextStyleKit, StarterKit]
+
 
 export default function AddTourForm() {
   const [form, setForm] = useState<FormState>({
@@ -213,58 +218,13 @@ export default function AddTourForm() {
       <div className="space-y-2">
         <label className="font-semibold text-blue-700">Lịch trình tour</label>
         {form.tourSchedule.map((item, index) => (
-          <div key={index} className="bg-white border border-gray-400 rounded-lg shadow-sm p-4 space-y-2 mt-3">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-blue-600">Ngày {index + 1}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  const updated = [...form.tourSchedule];
-                  updated.splice(index, 1);
-                  setForm({ ...form, tourSchedule: updated });
-                }}
-                className="flex items-center gap-2 bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 text-sm"
-              >
-                <TrashIcon className="w-4 h-4" />
-                Xoá
-              </button>
-            </div>
-
-            <input
-              type="date"
-              value={item.date}
-              onChange={(e) => {
-                const updated = [...form.tourSchedule];
-                updated[index].date = e.target.value;
-                setForm({ ...form, tourSchedule: updated });
-              }}
-              className="border border-gray-400 rounded-md p-2 text-sm w-40"
-            />
-
-            <input
-              type="text"
-              placeholder="Tiêu đề ngắn (VD: Khởi hành)"
-              value={item.title}
-              onChange={(e) => {
-                const updated = [...form.tourSchedule];
-                updated[index].title = e.target.value;
-                setForm({ ...form, tourSchedule: updated });
-              }}
-              className="w-full border border-gray-400 rounded-md p-2 text-sm"
-            />
-
-            <textarea
-              placeholder="Mô tả hoạt động trong ngày"
-              value={item.description}
-              onChange={(e) => {
-                const updated = [...form.tourSchedule];
-                updated[index].description = e.target.value;
-                setForm({ ...form, tourSchedule: updated });
-              }}
-              className="w-full border border-gray-400 rounded-md p-2 text-sm"
-              rows={3}
-            />
-          </div>
+          <ScheduleItem
+            key={index}
+            item={item}
+            index={index}
+            form={form}
+            setForm={setForm}
+          />
         ))}
 
         <button

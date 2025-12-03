@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import {ConfirmReadyModal} from "@/app/components/ConfirmReadyModal";
 import {Category} from "@/app/generated/prisma/enums";
 import {TourSchedule} from "@/app/components/TourSchedule";
+import ScheduleItem from "@/app/components/ScheduleItem";
 
 export interface Tour {
   id: string;
@@ -65,10 +66,6 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
       tourSchedule: [...prev.tourSchedule, { date: "", title: "", description: "" }],
     }));
   };
-
-  const formatDate = (date: string) => {
-    return date.slice(0, 10);
-  }
 
   const toggleReady = async () => {
     const token = localStorage.getItem("adminToken");
@@ -235,43 +232,14 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
       </div>
 
       <h3 className="font-semibold mt-4">Lịch trình tour</h3>
-      {form.tourSchedule.map((day, index) => (
-        <div key={index} className="mb-6">
-          <label className="block font-semibold mb-2">Ngày {index + 1}:</label>
-          <input
-            type="date"
-            value={formatDate(day.date)}
-            onChange={(e) => {
-              const updated = [...form.tourSchedule];
-              updated[index].date = e.target.value;
-              setForm((prev) => ({ ...prev, tourSchedule: updated }));
-            }}
-            className="border rounded px-3 py-2 w-full"
-          />
-
-          <label className="block mt-4">Địa điểm:</label>
-          <input
-            type="text"
-            value={day.title}
-            onChange={(e) => {
-              const updated = [...form.tourSchedule];
-              updated[index].title = e.target.value;
-              setForm((prev) => ({ ...prev, tourSchedule: updated }));
-            }}
-            className="border rounded px-3 py-2 w-full"
-          />
-
-          <label className="block mt-4">Mô tả:</label>
-          <textarea
-            value={day.description}
-            onChange={(e) => {
-              const updated = [...form.tourSchedule];
-              updated[index].description = e.target.value;
-              setForm((prev) => ({ ...prev, tourSchedule: updated }));
-            }}
-            className="border rounded px-3 py-2 w-full"
-          />
-        </div>
+      {form.tourSchedule.map((item, index) => (
+        <ScheduleItem
+          key={index}
+          item={item}
+          index={index}
+          form={form}
+          setForm={setForm}
+        />
       ))}
       <button type="button" onClick={addScheduleItem} className="text-blue-600 hover:underline">
         + Thêm ngày

@@ -40,8 +40,8 @@ export default function TourSchedule({ schedule }: { schedule: TourSchedule[] })
                 className={`px-4 py-3 text-gray-700 border-t border-gray-200 transition-all duration-300 ease-in-out ${
                   isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
                 } overflow-hidden`}
+                dangerouslySetInnerHTML={{ __html: item.description }}
               >
-                {item.description}
               </div>
             </div>
           );
