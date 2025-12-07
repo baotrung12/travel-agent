@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import {createClient} from '@supabase/supabase-js'
 import toast from "react-hot-toast";
 
 const supabase = createClient(
@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export async function uploadImages(files: File[], bucket): Promise<string[] | null> {
+export async function uploadImages(files: File[], bucket: string): Promise<string[] | null> {
   try {
     const imageUrls: string[] = []
 

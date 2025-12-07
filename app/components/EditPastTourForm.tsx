@@ -94,7 +94,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
       // Merge old + new tour images
       const tourImageUrls = [
         ...(form.tourImages.filter((url) => typeof url === "string") as string[]),
-        ...newTourImageUrls,
+        ...(newTourImageUrls || []),
       ]
 
       // 2. Upload new schedule images per day
@@ -106,7 +106,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
             date: day.date,
             title: day.title,
             description: day.description,
-            imageUrls: [...(day.imageUrls || []), ...newDayImageUrls],
+            imageUrls: [...(day.imageUrls || []), ...(newDayImageUrls || [])],
           }
         })
       )

@@ -107,7 +107,8 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
       destination: form.destination,
       category: form.category,
       tourSchedule: JSON.stringify(sortedSchedule),
-      tourImages: [...imageUrls, ...form.imageUrls],
+      tourImages: [...(imageUrls || []), ...(form.imageUrls || [])]
+      ,
     }
 
     const res = await fetch(`/api/admin/tours/${tour.id}`, {
