@@ -1,3 +1,5 @@
+import {XMarkIcon} from "@heroicons/react/16/solid";
+
 export default function Modal({
                                 title,
                                 children,
@@ -21,20 +23,27 @@ export default function Modal({
         : "max-w-4xl";
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
       <div
-        className={`bg-white w-full ${widthClass} rounded-lg shadow-lg flex flex-col max-h-[90vh]`}
+        className={`bg-white w-full ${widthClass} rounded-md shadow-lg flex flex-col max-h-[90vh]`}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b font-semibold text-lg sticky top-0 bg-white z-10">
+        <div className="px-6 py-4 border-b border-gray-300 font-semibold text-lg sticky top-0 bg-white z-10">
           {title}
+          <button
+            onClick={onClose}
+            className="absolute top-5 right-3 text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         </div>
+
 
         {/* Content */}
         <div className="overflow-y-auto px-6 py-4 flex-1">{children}</div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t sticky bottom-0 bg-white z-10">
+        <div className="px-6 py-4 border-t border-gray-300 sticky bottom-0 bg-white z-10">
           <div className="flex gap-4 mt-4">
             {actions ? (
               actions

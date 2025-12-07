@@ -26,50 +26,48 @@ export async function GET() {
 
 
 export async function POST(req: Request) {
-  const formData = await req.formData();
-  const files = formData.getAll("images") as File[];
-
-  const tourScheduleRaw = formData.get("tourSchedule") as string;
-  const tourSchedule = JSON.parse(tourScheduleRaw);
-
-  const uploadedUrls: string[] = [];
-
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const fileName = `tours/${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from("tour-images")
-      .upload(fileName, buffer, { contentType: file.type });
-
-    if (error) throw error;
-
-    const { data: publicUrl } = supabase.storage
-      .from("tour-images")
-      .getPublicUrl(fileName);
-
-    uploadedUrls.push(publicUrl.publicUrl);
-  }
+  const body = await req.json()
+  const {
+    title,
+    slug,
+    departureStart,
+    departureEnd,
+    duration,
+    price,
+    tourCode,
+    summary,
+    promotion,
+    departurePoint,
+    destination,
+    category,
+    tourSchedule,
+    images,
+  } = body
 
   try {
+    const scheduleArray = Array.isArray(tourSchedule)
+      ? tourSchedule
+      : JSON.parse(tourSchedule || "[]")
+
+    console.log("[DATA] title:", scheduleArray, "slug:", slug, "tourCode:", tourCode, "departureStart:", departureStart, "departureEnd:", departureEnd, "duration:", duration, "price:", price, "summary:", summary, "promotion:", promotion, "departurePoint:", departurePoint, "destination:", destination, "category:", category, "images:", images)
+
     const tour = await prisma.tour.create({
       data: {
-        title: formData.get("title") as string,
-        slug: formData.get("slug") as string,
-        tourCode: formData.get("tourCode") as string,
-        summary: formData.get("summary") as string,
-        promotion: formData.get("promotion") as string,
-        departurePoint: formData.get("departurePoint") as string,
-        departureStart: new Date(formData.get("departureStart") as string),
-        departureEnd: new Date(formData.get("departureEnd") as string),
-        duration: formData.get("duration") as string,
-        price: Number(formData.get("price")),
-        imageUrls: uploadedUrls,
-        destination: formData.get("destination") as string,
-        category: formData.get("category") as Category,
+        title,
+        slug,
+        departureStart: new Date(departureStart),
+        departureEnd: new Date(departureEnd),
+        duration,
+        price: Number(price),
+        tourCode,
+        summary,
+        promotion,
+        departurePoint,
+        destination,
+        category: category as Category,
+        imageUrls: images,
         tourSchedule: {
-          create: tourSchedule.map((item: any) => ({
+          create: scheduleArray.map((item: any) => ({
             date: new Date(item.date),
             title: item.title,
             description: item.description,

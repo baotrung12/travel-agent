@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {prisma} from "@/app/prisma";
 import {supabase} from "@/app/services/supabaseClient";
+import {Category} from "@/app/generated/prisma/enums";
 
 export async function GET() {
   const today = new Date();
@@ -19,65 +20,22 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const formData = await req.formData();
+  const body = await req.json()
 
-  const title = formData.get("title") as string;
-  const slug = formData.get("slug") as string;
-  const tourCode = formData.get("tourCode") as string;
-  const departureStart = formData.get("departureStart") as string;
-  const departureEnd = formData.get("departureEnd") as string;
-  const duration = formData.get("duration") as string;
-  const price = Number(formData.get("price"));
-  const participants = formData.get("participants")
-    ? Number(formData.get("participants"))
-    : null;
-  const feedback = formData.get("feedback") as string | null;
-
-  // Upload tour images to Supabase
-  const tourImagesFiles = formData.getAll("tourImages") as File[];
-  const tourImageUrls: string[] = [];
-
-  for (const file of tourImagesFiles) {
-    const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from("past-tour-images") // 👈 your bucket name
-      .upload(fileName, file);
-
-    if (error) throw error;
-
-    const { data: publicUrlData } = supabase.storage
-      .from("past-tour-images")
-      .getPublicUrl(fileName);
-
-    tourImageUrls.push(publicUrlData.publicUrl);
-  }
-
-  // Parse schedule JSON
-  const pastScheduleRaw = formData.get("pastSchedule") as string;
-  const pastSchedule = pastScheduleRaw ? JSON.parse(pastScheduleRaw) : [];
-
-  // Upload schedule images
-  const scheduleWithUrls = await Promise.all(
-    pastSchedule.map(async (day: any, idx: number) => {
-      const files = formData.getAll(`scheduleImages_${idx}`) as File[];
-      const urls: string[] = [];
-
-      for (const file of files) {
-        const fileName = `${Date.now()}-${idx}-${file.name}`;
-        const { error } = await supabase.storage.from("past-tour-images").upload(fileName, file);
-        if (error) throw error;
-        const { data: publicUrlData } = supabase.storage.from("past-tour-images").getPublicUrl(fileName);
-        urls.push(publicUrlData.publicUrl);
-      }
-
-      return {
-        date: new Date(day.date),
-        title: day.title,
-        description: day.description,
-        imageUrls: urls,
-      };
-    })
-  );
+  const {
+    title,
+    slug,
+    tourCode,
+    departureStart,
+    departureEnd,
+    duration,
+    price,
+    participants,
+    feedback,
+    category,
+    tourImages,
+    pastSchedule,
+  } = body
 
   const newPastTour = await prisma.pastTour.create({
     data: {
@@ -87,12 +45,18 @@ export async function POST(req: Request) {
       departureStart: new Date(departureStart),
       departureEnd: new Date(departureEnd),
       duration,
-      price,
-      participants,
+      price: Number(price),
+      participants: Number(participants) ?? null,
       feedback,
-      tourImages: tourImageUrls,
+      tourImages,
+      category: category as Category,
       pastSchedule: {
-        create: scheduleWithUrls,
+        create: pastSchedule.map((day: any) => ({
+          date: new Date(day.date),
+          title: day.title,
+          description: day.description,
+          imageUrls: day.imageUrls, // ✅ already URLs
+        })),
       },
     },
     include: { pastSchedule: true },

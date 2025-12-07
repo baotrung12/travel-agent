@@ -57,7 +57,7 @@ export default function AdminPastToursTable() {
       {selectedTourId && (
         <Modal
           title="Cập nhật tour"
-          formId="editTourForm"
+          formId="editPastTourForm"
           onClose={() => setSelectedTourId(null)}
         >
           <EditPastTourForm tourId={selectedTourId} />

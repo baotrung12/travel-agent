@@ -4,6 +4,8 @@ import {ConfirmReadyModal} from "@/app/components/ConfirmReadyModal";
 import {Category} from "@/app/generated/prisma/enums";
 import {TourSchedule} from "@/app/components/TourSchedule";
 import ScheduleItem from "@/app/components/ScheduleItem";
+import {uploadImages} from "@/app/services/uploadImage";
+import toast from "react-hot-toast";
 
 export interface Tour {
   id: string;
@@ -93,25 +95,32 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
     const sortedSchedule = [...form.tourSchedule].sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
+    const imageUrls: string[] | null = await uploadImages(form.images, "tour-images");
+    const payload = {
+      title: form.title,
+      slug: form.slug,
+      departureStart: form.departureStart,
+      departureEnd: form.departureEnd,
+      duration: form.duration,
+      price: form.price,
+      tourCode: form.tourCode,
+      destination: form.destination,
+      category: form.category,
+      tourSchedule: JSON.stringify(sortedSchedule),
+      tourImages: [...imageUrls, ...form.imageUrls],
+    }
 
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("slug", form.slug);
-    formData.append("tourCode", form.tourCode);
-    formData.append("departureStart", form.departureStart);
-    formData.append("departureEnd", form.departureEnd);
-    formData.append("duration", form.duration);
-    formData.append("price", form.price);
-    formData.append("tourSchedule", JSON.stringify(sortedSchedule));
-    form.imageUrls.forEach((url) => formData.append("tourImages", url));
-    formData.append("destination", form.destination);
-    formData.append("category", form.category);
-    form.images.forEach((file) => formData.append("images", file));
-
-    await fetch(`/api/admin/tours/${tour.id}`, {
+    const res = await fetch(`/api/admin/tours/${tour.id}`, {
       method: "PATCH",
-      body: formData as BodyInit,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
+
+    if (res.ok) {
+      toast.success("Tour updated successfully!")
+    } else {
+      toast.error("Failed to update tour")
+    }
 
     onClose();
   };
@@ -186,6 +195,7 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
         <div key={idx} className="relative">
           <img src={url} alt={`Image ${idx}`} className="w-24 h-24 object-cover rounded" />
           <button
+            type="button"
             onClick={() => {
               const updated = form.imageUrls.filter((_, i) => i !== idx);
               setForm((prev) => ({ ...prev, imageUrls: updated }));

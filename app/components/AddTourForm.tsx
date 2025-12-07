@@ -6,6 +6,9 @@ import {Category} from "@/app/generated/prisma/enums";
 import StarterKit from "@tiptap/starter-kit";
 import {TextStyleKit} from '@tiptap/extension-text-style'
 import ScheduleItem from "@/app/components/ScheduleItem";
+import {supabase} from "@/app/services/supabaseClient";
+import {uploadImages} from "@/app/services/uploadImage";
+import toast from "react-hot-toast";
 
 interface FormState {
   title: string;
@@ -88,36 +91,38 @@ export default function AddTourForm() {
     }
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("slug", form.slug);
-    formData.append("departureStart", form.departureStart);
-    formData.append("departureEnd", form.departureEnd);
-    formData.append("duration", form.duration);
-    formData.append("price", form.price);
-    formData.append("tourCode", form.tourCode);
-    formData.append("summary", form.summary);
-    formData.append("promotion", form.promotion);
-    formData.append("departurePoint", form.departurePoint);
-    formData.append("destination", form.destination);
-    formData.append("category", form.category);
-
-    // 👇 stringify the array of schedule objects
-    formData.append("tourSchedule", JSON.stringify(form.tourSchedule));
-
-    form.images.forEach((file) => {
-      formData.append("images", file);
-    });
+    const imageUrls: string[] | null = await uploadImages(form.images, "tour-images");
+    const payload = {
+      title: form.title,
+      slug: form.slug,
+      departureStart: form.departureStart,
+      departureEnd: form.departureEnd,
+      duration: form.duration,
+      price: form.price,
+      tourCode: form.tourCode,
+      summary: form.summary,
+      promotion: form.promotion,
+      departurePoint: form.departurePoint,
+      destination: form.destination,
+      category: form.category,
+      tourSchedule: form.tourSchedule,
+      images: imageUrls,
+    }
 
     const response = await fetch("/api/admin/tours", {
       method: "POST",
-      body: formData as BodyInit,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
-    const result = await response.json();
-    console.log("Saved tour:", result);
+    if (response.ok) {
+      toast.success("Tour created successfully!")
+    } else {
+      toast.error("Failed to create tour")
+    }
   };
 
   return (
@@ -278,7 +283,7 @@ export default function AddTourForm() {
       <div>
         <label className="font-semibold text-blue-700">Gia Tour</label>
         <input
-          type="text"
+          type="number"
           placeholder="Giá tour (VND)"
           value={form.price}
           onChange={(e) => setForm({ ...form, price: e.target.value })}

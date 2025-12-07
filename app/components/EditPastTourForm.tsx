@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import ImagePicker from "./ImagePicker";
 import {ConfirmReadyModal} from "@/app/components/ConfirmReadyModal";
 import {Category} from "@/app/generated/prisma/enums";
+import toast from "react-hot-toast";
+import {uploadImages} from "@/app/services/uploadImage";
 
 interface PastSchedule {
   id: string | null;
@@ -82,68 +84,78 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form) return;
+    e.preventDefault()
+    if (!form) return
 
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("tourCode", form.tourCode);
-    formData.append("departureStart", form.departureStart);
-    formData.append("departureEnd", form.departureEnd);
-    formData.append("duration", String(form.duration));
-    formData.append("price", String(form.price));
-    form.tourImages.forEach((file) => {
-      formData.append("tourImages", file);
-    });
-    formData.append("feedback", form.feedback || "")
-    formData.append("destination", form.destination);
-    formData.append("category", form.category);
-    if (form.participants) formData.append("participants", String(form.participants));
-    if (form.feedback) formData.append("feedback", form.feedback);
+    try {
+      // 1. Upload new tour images
+      const newTourImageUrls = await uploadImages(newTourImages, "past-tour-images")
 
-    // stringify schedule (bao gồm URL ảnh cũ mà bạn muốn giữ lại)
-    const scheduleWithoutFiles = form.pastSchedule.map((day) => ({
-      id: day.id,
-      date: day.date,
-      title: day.title,
-      description: day.description,
-      imageUrls: day.imageUrls,
-    }));
-    formData.append("pastSchedule", JSON.stringify(scheduleWithoutFiles));
+      // Merge old + new tour images
+      const tourImageUrls = [
+        ...(form.tourImages.filter((url) => typeof url === "string") as string[]),
+        ...newTourImageUrls,
+      ]
 
-    // append file ảnh mới cho tour
-    newTourImages.forEach((file: File) => {
-      formData.append("images", file);
-    });
+      // 2. Upload new schedule images per day
+      const pastSchedule = await Promise.all(
+        form.pastSchedule.map(async (day, idx) => {
+          const newDayImageUrls = await uploadImages(scheduleFiles[idx] || [], "past-tour-images")
+          return {
+            id: day.id,
+            date: day.date,
+            title: day.title,
+            description: day.description,
+            imageUrls: [...(day.imageUrls || []), ...newDayImageUrls],
+          }
+        })
+      )
 
-    // append file ảnh mới cho từng ngày schedule từ state scheduleFiles
-    Object.entries(scheduleFiles).forEach(([idx, files]) => {
-      files.forEach((file) => {
-        formData.append(`scheduleImages_${idx}`, file);
-      });
-    });
+      // 3. Build JSON payload
+      const payload = {
+        title: form.title,
+        tourCode: form.tourCode,
+        departureStart: form.departureStart,
+        departureEnd: form.departureEnd,
+        duration: form.duration,
+        price: form.price,
+        participants: form.participants,
+        feedback: form.feedback || "",
+        destination: form.destination,
+        category: form.category,
+        tourImages: tourImageUrls,
+        pastSchedule,
+      }
 
-    await fetch(`/api/admin/past-tours/${tourId}`, {
-      method: "PATCH",
-      body: formData as BodyInit,
-    });
+      // 4. Send JSON to backend
+      const res = await fetch(`/api/admin/past-tours/${tourId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
 
-    alert("Past tour updated!");
+      if (res.ok) {
+        toast.success("Past tour updated successfully!")
+      } else {
+        toast.error("Failed to update past tour")
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error("Unexpected error occurred")
+    }
   };
 
   if (!form) return <p>Loading...</p>;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 p-6 border rounded">
-      <h2 className="text-xl font-bold mb-4">Edit Past Tour</h2>
-
+    <form id="editPastTourForm" onSubmit={handleSubmit} className="space-y-6 p-6 rounded">
       <div>
         <label className="block font-semibold mb-1">Title</label>
         <input
           type="text"
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
-          className="border px-3 py-2 w-full"
+          className="w-full border border-gray-400 rounded-md p-2"
         />
       </div>
 
@@ -203,7 +215,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
           type="text"
           value={form.tourCode}
           onChange={(e) => setForm({ ...form, tourCode: e.target.value })}
-          className="border px-3 py-2 w-full"
+          className="w-full border border-gray-400 rounded-md p-2"
         />
       </div>
 
@@ -214,7 +226,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
             type="date"
             value={form.departureStart.split("T")[0]}
             onChange={(e) => setForm({ ...form, departureStart: e.target.value })}
-            className="border px-3 py-2 w-full"
+            className="w-full border border-gray-400 rounded-md p-2"
           />
         </div>
         <div>
@@ -223,7 +235,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
             type="date"
             value={form.departureEnd.split("T")[0]}
             onChange={(e) => setForm({ ...form, departureEnd: e.target.value })}
-            className="border px-3 py-2 w-full"
+            className="w-full border border-gray-400 rounded-md p-2"
           />
         </div>
       </div>
@@ -234,7 +246,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
           type="number"
           value={form.duration}
           onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
-          className="border px-3 py-2 w-full"
+          className="w-full border border-gray-400 rounded-md p-2"
         />
       </div>
 
@@ -244,7 +256,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
           type="number"
           value={form.price}
           onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-          className="border px-3 py-2 w-full"
+          className="w-full border border-gray-400 rounded-md p-2"
         />
       </div>
 
@@ -254,7 +266,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
           type="number"
           value={form.participants ?? ""}
           onChange={(e) => setForm({ ...form, participants: Number(e.target.value) })}
-          className="border px-3 py-2 w-full"
+          className="w-full border border-gray-400 rounded-md p-2"
         />
       </div>
 
@@ -263,7 +275,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
         <textarea
           value={form.feedback ?? ""}
           onChange={(e) => setForm({ ...form, feedback: e.target.value })}
-          className="border px-3 py-2 w-full"
+          className="w-full border border-gray-400 rounded-md p-2"
         />
       </div>
 
@@ -274,7 +286,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
 
       <h3 className="text-lg font-semibold">Schedule</h3>
       {form.pastSchedule.map((day, index) => (
-        <div key={index} className="border p-4 mb-4 rounded">
+        <div key={index} className="border border-gray-400 p-4 mb-4 rounded">
           <label className="block font-semibold mb-1">Date</label>
           <input
             type="date"
@@ -284,7 +296,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
               updated[index].date = e.target.value;
               setForm({ ...form, pastSchedule: updated });
             }}
-            className="border px-3 py-2 w-full mb-2"
+            className="w-full border border-gray-400 rounded-md p-2 mb-2"
           />
 
           <label className="block font-semibold mb-1">Location</label>
@@ -296,7 +308,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
               updated[index].title = e.target.value;
               setForm({ ...form, pastSchedule: updated });
             }}
-            className="border px-3 py-2 w-full mb-2"
+            className="w-full border border-gray-400 rounded-md p-2 mb-2"
           />
 
           <label className="block font-semibold mb-1">Description</label>
@@ -307,7 +319,7 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
               updated[index].description = e.target.value;
               setForm({ ...form, pastSchedule: updated });
             }}
-            className="border px-3 py-2 w-full mb-2"
+            className="w-full border border-gray-400 rounded-md p-2 mb-2"
           />
 
           <label className="block font-semibold mb-1">Schedule Images</label>
@@ -333,8 +345,6 @@ export default function EditPastTourForm({ tourId }: { tourId: string }) {
           onConfirm={toggleReady}
         />
       )}
-
-      <button type="submit" className="btn btn-primary">Update Past Tour</button>
     </form>
   );
 }

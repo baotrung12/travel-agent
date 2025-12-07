@@ -4,6 +4,8 @@ import ImagePicker from "./ImagePicker";
 import slugify from "slugify";
 import {PlusIcon} from "@heroicons/react/24/solid";
 import {Category} from "@/app/generated/prisma/enums";
+import {uploadImages} from "@/app/services/uploadImage";
+import toast from "react-hot-toast";
 
 interface FormState {
   title: string;
@@ -74,41 +76,57 @@ export default function AddPastTourForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData();
+    try {
+      e.preventDefault();
+      // Upload tour images
+      const tourImageUrls = await uploadImages(form.tourImages, "past-tour-images");
 
-    formData.append("title", form.title);
-    formData.append("tourCode", form.tourCode);
-    formData.append("slug", generateSlug(form.title));
-    formData.append("tourCode", generateTourCode())
-    formData.append("departureStart", form.departureStart);
-    formData.append("departureEnd", form.departureEnd);
-    formData.append("duration", form.duration);
-    formData.append("price", form.price);
-    formData.append("participants", form.participants);
-    formData.append("feedback", form.feedback);
-    formData.append("destination", form.destination);
-    formData.append("category", form.category);
+      // Upload schedule images per day
+      const pastSchedule = await Promise.all(
+        form.pastSchedule.map(async (day) => {
+          const dayImageUrls = await uploadImages(day.imageFiles, "past-tour-images")
+          return {
+            date: day.date,
+            title: day.title,
+            description: day.description,
+            images: dayImageUrls,
+          }
+        })
+      )
 
-    form.tourImages.forEach((file) => formData.append("tourImages", file));
+      // Build JSON payload
+      const payload = {
+        title: form.title,
+        slug: generateSlug(form.title),
+        tourCode: generateTourCode(),
+        departureStart: form.departureStart,
+        departureEnd: form.departureEnd,
+        duration: form.duration,
+        price: form.price,
+        participants: form.participants,
+        feedback: form.feedback,
+        destination: form.destination,
+        category: form.category,
+        tourImages: tourImageUrls,
+        pastSchedule,
+      }
 
-    // stringify schedule (không bao gồm File)
-    const scheduleWithoutFiles = form.pastSchedule.map((day) => ({
-      date: day.date,
-      title: day.title,
-      description: day.description,
-    }));
-    formData.append("pastSchedule", JSON.stringify(scheduleWithoutFiles));
+      // Send JSON to backend
+      const res = await fetch("/api/admin/past-tours", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
 
-    // append file ảnh cho từng ngày schedule
-    form.pastSchedule.forEach((day, idx) => {
-      day.imageFiles.forEach((file: File) => {
-        formData.append(`scheduleImages_${idx}`, file);
-      });
-    });
-
-    await fetch("/api/admin/past-tours", { method: "POST", body: formData as BodyInit });
-    alert("Past tour submitted!");
+      if (res.ok) {
+        toast.success("Past tour submitted successfully!")
+      } else {
+        toast.error("Failed to submit past tour")
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error("Unexpected error occurred happened when submitting past tour. Please try again later.")
+    }
   };
 
   return (

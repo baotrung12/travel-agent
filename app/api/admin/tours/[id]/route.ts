@@ -22,75 +22,54 @@ export async function GET(
 }
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const formData = await req.formData();
+  const { id } = await context.params
+  const body = await req.json()
 
-  // Parse basic fields
-  const title = formData.get("title") as string;
-  const slug = formData.get("slug") as string;
-  const tourCode = formData.get("tourCode") as string;
-  const departureStart = new Date(formData.get("departureStart") as string);
-  const departureEnd = new Date(formData.get("departureEnd") as string);
-  const duration = formData.get("duration") as string;
-  const price = Number(formData.get("price"));
-  const destination = formData.get("destination") as string;
-  const category = formData.get("category") as Category;
+  // Parse fields directly from JSON payload
+  const {
+    title,
+    slug,
+    tourCode,
+    departureStart,
+    departureEnd,
+    duration,
+    price,
+    destination,
+    category,
+    tourSchedule,
+    tourImages,
+  } = body
 
-  // Parse tourSchedule
-  const tourScheduleRaw = formData.get("tourSchedule") as string;
-  console.log("tourScheduleRaw: ", tourScheduleRaw);
-  const tourSchedule = JSON.parse(tourScheduleRaw); // array of { date, title, description }
+  console.log("tourSchedule:", tourSchedule)
 
-  // Upload new images
-  const files = formData.getAll("images") as File[];
-  const uploadedUrls: string[] = [];
+  const scheduleArray = Array.isArray(tourSchedule)
+    ? tourSchedule
+    : JSON.parse(tourSchedule || "[]")
 
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const fileName = `tours/${Date.now()}-${file.name}`;
-
-    const { error } = await supabase.storage
-      .from("tour-images")
-      .upload(fileName, buffer, { contentType: file.type });
-
-    if (error) throw error;
-
-    const { data: publicUrl } = supabase.storage
-      .from("tour-images")
-      .getPublicUrl(fileName);
-
-    uploadedUrls.push(publicUrl.publicUrl);
-  }
-  const oldImages = formData.get("tourImages") ? (formData.get("tourImages") as String).split(",") : [];
-  console.log("oldImages: ", oldImages);
-  const imageUrls = [...oldImages.filter((url) => url && url.trim() !== ""), ...uploadedUrls]
-  console.log("imageUrls: ", imageUrls);
-
-  // Update tour
+  // Update tour in DB
   const updatedTour = await prisma.tour.update({
-    where: { id: id },
+    where: { id },
     data: {
       title,
       slug,
       tourCode,
-      departureStart,
-      departureEnd,
+      departureStart: new Date(departureStart),
+      departureEnd: new Date(departureEnd),
       duration,
-      price,
-      imageUrls,
+      price: Number(price),
       destination,
-      category,
+      category: category as Category,
+      imageUrls: tourImages,
       tourSchedule: {
         deleteMany: {}, // remove old schedule
-        create: tourSchedule.map((item: any) => ({
+        create: scheduleArray.map((item: any) => ({
           date: new Date(item.date),
           title: item.title,
           description: item.description,
         })),
       },
     },
-  });
+  })
 
-  return NextResponse.json(updatedTour);
+  return NextResponse.json(updatedTour)
 }
