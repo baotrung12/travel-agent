@@ -14,8 +14,6 @@ export interface Tour {
   summary: string;
   promotion: string;
   tourSchedule: TourSchedule[];
-  departureStart: string;
-  departureEnd: string;
   departurePoint: string;
   duration: string;
   tourCode: string;
@@ -37,8 +35,6 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
     title: tour.title,
     slug: tour.slug,
     tourCode: tour.tourCode,
-    departureStart: tour.departureStart.slice(0, 10),
-    departureEnd: tour.departureEnd.slice(0, 10),
     duration: tour.duration,
     price: tour.price.toString(),
     tourSchedule: tour.tourSchedule || [],
@@ -92,23 +88,18 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const sortedSchedule = [...form.tourSchedule].sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    const sortedSchedule = [...form.tourSchedule];
     const imageUrls: string[] | null = await uploadImages(form.images, "tour-images");
     const payload = {
       title: form.title,
       slug: form.slug,
-      departureStart: form.departureStart,
-      departureEnd: form.departureEnd,
       duration: form.duration,
       price: form.price,
       tourCode: form.tourCode,
       destination: form.destination,
       category: form.category,
       tourSchedule: JSON.stringify(sortedSchedule),
-      tourImages: [...(imageUrls || []), ...(form.imageUrls || [])]
-      ,
+      tourImages: [...(imageUrls || []), ...(form.imageUrls || [])],
     }
 
     const res = await fetch(`/api/admin/tours/${tour.id}`, {
@@ -160,16 +151,6 @@ export default function EditTourForm({ tour, onClose }: EditTourFormProps) {
       <label className="block">
         <span className="text-gray-700 font-medium">Mã tour</span>
         <input name="tourCode" value={form.tourCode} onChange={handleChange} className="w-full p-2 border border-gray-400 rounded" />
-      </label>
-
-      <label className="block">
-        <span className="text-gray-700 font-medium w-32">Ngày khởi hành</span>
-        <input type="date" name="departureStart" value={form.departureStart} onChange={handleChange} className="p-2 border border-gray-400 rounded" />
-      </label>
-
-      <label className="block">
-        <span className="text-gray-700 font-medium w-32">Ngày kết thúc</span>
-        <input type="date" name="departureEnd" value={form.departureEnd} onChange={handleChange} className="p-2 border border-gray-400 rounded" />
       </label>
 
       <label className="block">

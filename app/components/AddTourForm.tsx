@@ -15,30 +15,26 @@ interface FormState {
   slug: string;
   summary: string;
   promotion: string;
-  tourSchedule: { date: string; title: string; description: string }[];
-  departureStart: string;
-  departureEnd: string;
+  tourSchedule: { title: string; description: string }[];
   departurePoint: string;
   duration: string;
   tourCode: string;
   price: string;
   destination: string;
-  category: Category;   // ✅ allow both STUDENT and TEACHER
+  category: Category;
   images: File[];
 }
 
 const extensions = [TextStyleKit, StarterKit]
 
 
-export default function AddTourForm() {
+export default function AddTourForm({ onSaved }: { onSaved?: () => void }) {
   const [form, setForm] = useState<FormState>({
     title: "",
     slug: "",
     summary: "",
     promotion: "",
-    tourSchedule: [{ date: "", title: "", description: "" }],
-    departureStart: "",
-    departureEnd: "",
+    tourSchedule: [{ title: "", description: "" }],
     departurePoint: "",
     duration: "",
     tourCode: "",
@@ -54,16 +50,6 @@ export default function AddTourForm() {
     const tourCode = generateTourCode();
     setForm((prev) => ({ ...prev, slug, tourCode }));
   }, [form.title]);
-
-  // Auto-calculate duration
-  useEffect(() => {
-    if (form.departureStart && form.departureEnd) {
-      const start = new Date(form.departureStart);
-      const end = new Date(form.departureEnd);
-      const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      setForm((prev) => ({ ...prev, duration: `${diff} ngày` }));
-    }
-  }, [form.departureStart, form.departureEnd]);
 
   const generateSlug = (title: string) => {
     return slugify(title, {
@@ -98,8 +84,6 @@ export default function AddTourForm() {
     const payload = {
       title: form.title,
       slug: form.slug,
-      departureStart: form.departureStart,
-      departureEnd: form.departureEnd,
       duration: form.duration,
       price: form.price,
       tourCode: form.tourCode,
@@ -120,6 +104,7 @@ export default function AddTourForm() {
 
     if (response.ok) {
       toast.success("Tour created successfully!")
+      onSaved?.()
     } else {
       toast.error("Failed to create tour")
     }
@@ -237,7 +222,7 @@ export default function AddTourForm() {
           onClick={() =>
             setForm({
               ...form,
-              tourSchedule: [...form.tourSchedule, { date: "", title: "", description: "" }],
+              tourSchedule: [...form.tourSchedule, { title: "", description: "" }],
             })
           }
           className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 text-sm"
@@ -247,36 +232,8 @@ export default function AddTourForm() {
         </button>
       </div>
 
-      {/* Departure Schedule */}
-      <div className="space-y-3">
-        <h4 className="text-lg font-semibold text-blue-700">Lịch khởi hành</h4>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col space-y-1">
-            <label className="text-sm text-gray-600">Ngày bắt đầu</label>
-            <input
-              type="date"
-              value={form.departureStart}
-              onChange={(e) => setForm({ ...form, departureStart: e.target.value })}
-              className="border border-gray-200 rounded-md p-2 text-sm w-40"
-            />
-          </div>
-
-          <div className="flex flex-col space-y-1">
-            <label className="text-sm text-gray-600">Ngày kết thúc</label>
-            <input
-              type="date"
-              value={form.departureEnd}
-              onChange={(e) => setForm({ ...form, departureEnd: e.target.value })}
-              className="border border-gray-200 rounded-md p-2 text-sm w-40"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-          <p className="text-sm text-gray-500">🕒 Thời gian tour: <span className="font-medium text-gray-700">{form.duration}</span></p>
-          <p className="text-sm text-gray-500">🆔 Mã tour: <span className="font-medium text-gray-700">{form.tourCode}</span></p>
-        </div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+        <p className="text-sm text-gray-500">🆔 Mã tour: <span className="font-medium text-gray-700">{form.tourCode}</span></p>
       </div>
 
 

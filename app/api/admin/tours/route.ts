@@ -30,8 +30,6 @@ export async function POST(req: Request) {
   const {
     title,
     slug,
-    departureStart,
-    departureEnd,
     duration,
     price,
     tourCode,
@@ -49,14 +47,12 @@ export async function POST(req: Request) {
       ? tourSchedule
       : JSON.parse(tourSchedule || "[]")
 
-    console.log("[DATA] title:", scheduleArray, "slug:", slug, "tourCode:", tourCode, "departureStart:", departureStart, "departureEnd:", departureEnd, "duration:", duration, "price:", price, "summary:", summary, "promotion:", promotion, "departurePoint:", departurePoint, "destination:", destination, "category:", category, "images:", images)
+    console.log("[DATA] title:", scheduleArray, "slug:", slug, "tourCode:", tourCode, "duration:", duration, "price:", price, "summary:", summary, "promotion:", promotion, "departurePoint:", departurePoint, "destination:", destination, "category:", category, "images:", images)
 
     const tour = await prisma.tour.create({
       data: {
         title,
         slug,
-        departureStart: new Date(departureStart),
-        departureEnd: new Date(departureEnd),
         duration,
         price: Number(price),
         tourCode,
@@ -68,7 +64,6 @@ export async function POST(req: Request) {
         imageUrls: images,
         tourSchedule: {
           create: scheduleArray.map((item: any) => ({
-            date: new Date(item.date),
             title: item.title,
             description: item.description,
           })),

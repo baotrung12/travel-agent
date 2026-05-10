@@ -4,7 +4,6 @@ import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 export interface TourSchedule {
-  date: string;
   title: string;
   description: string;
 }
@@ -29,7 +28,7 @@ export default function TourSchedule({ schedule }: { schedule: TourSchedule[] })
                 className="w-full text-left px-4 py-3 bg-gray-100 hover:bg-gray-200 flex justify-between items-center"
               >
                 <span className="font-semibold text-gray-800">
-                  {item.date}: {item.title}
+                  {item.title}
                 </span>
                 <span className="text-blue-600">
                   {isOpen ? <FaChevronUp /> : <FaChevronDown />}

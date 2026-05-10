@@ -3,7 +3,6 @@ import StarterKit from '@tiptap/starter-kit'
 import MenuBar from "@/app/components/TipTapMenuBar";
 
 type TourScheduleItem = {
-  date: string
   title: string
   description: string
 }
@@ -46,17 +45,6 @@ export default function ScheduleItem({ item, index, form, setForm }: ScheduleIte
           Xoá
         </button>
       </div>
-
-      <input
-        type="date"
-        value={item.date}
-        onChange={(e) => {
-          const updated = [...form.tourSchedule]
-          updated[index].date = e.target.value
-          setForm({ ...form, tourSchedule: updated })
-        }}
-        className="border rounded-md p-2 text-sm w-40"
-      />
 
       <input
         type="text"

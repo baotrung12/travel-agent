@@ -30,8 +30,6 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     title,
     slug,
     tourCode,
-    departureStart,
-    departureEnd,
     duration,
     price,
     destination,
@@ -53,17 +51,14 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       title,
       slug,
       tourCode,
-      departureStart: new Date(departureStart),
-      departureEnd: new Date(departureEnd),
       duration,
       price: Number(price),
       destination,
       category: category as Category,
       imageUrls: tourImages,
       tourSchedule: {
-        deleteMany: {}, // remove old schedule
+        deleteMany: {},
         create: scheduleArray.map((item: any) => ({
-          date: new Date(item.date),
           title: item.title,
           description: item.description,
         })),

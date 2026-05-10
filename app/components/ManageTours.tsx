@@ -4,16 +4,15 @@ import Modal from "@/app/components/Modal";
 
 export function ManageTours({ title }: { title: string }) {
   const [tours, setTours] = useState<Tour[]>([]);
-
   const [editingTour, setEditingTour] = useState<Tour | null>();
 
-  useEffect(() => {
-    const fetchTours = async () => {
-      const res = await fetch("/api/admin/tours");
-      const data = await res.json();
-      setTours(data);
-    };
+  const fetchTours = async () => {
+    const res = await fetch("/api/admin/tours");
+    const data = await res.json();
+    setTours(data);
+  };
 
+  useEffect(() => {
     fetchTours();
   }, []);
 
@@ -25,7 +24,6 @@ export function ManageTours({ title }: { title: string }) {
         <thead>
         <tr className="bg-blue-50 text-left">
           <th className="p-2">Tiêu đề</th>
-          <th className="p-2">Ngày</th>
           <th className="p-2">Thời gian</th>
           <th className="p-2">Phương tiện</th>
           <th className="p-2">Hành động</th>
@@ -35,7 +33,6 @@ export function ManageTours({ title }: { title: string }) {
         {tours.map((tour) => (
           <tr key={tour.id} className="border-t">
             <td className="p-2">{tour.title}</td>
-            <td className="p-2">{tour.departureStart}</td>
             <td className="p-2">{tour.duration}</td>
             <td className="p-2">{tour.departurePoint}</td>
             <td className="p-2 space-x-2">
@@ -57,7 +54,7 @@ export function ManageTours({ title }: { title: string }) {
           formId="editTourForm"
           onClose={() => setEditingTour(null)}
         >
-          <EditTourForm tour={editingTour} onClose={() => setEditingTour(null)} />
+          <EditTourForm tour={editingTour} onClose={() => { setEditingTour(null); fetchTours(); }} />
         </Modal>
       )}
     </div>

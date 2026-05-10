@@ -30,8 +30,6 @@ model Tour {
   promotion      String
   price          Int
   departurePoint String
-  departureStart DateTime?
-  departureEnd   DateTime?
   duration       String
   tourSchedule   TourSchedule[]
   imageUrls      String[]
@@ -43,7 +41,6 @@ model Tour {
 
 model TourSchedule {
   id          String   @id @default(uuid())
-  date        DateTime
   title       String
   description String
   tourId      String

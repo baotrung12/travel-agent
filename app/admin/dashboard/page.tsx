@@ -33,7 +33,7 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 p-8 space-y-6">
-        {activeTab === "add" && <AddTourForm />}
+        {activeTab === "add" && <AddTourForm onSaved={() => setActiveTab("manage")} />}
         {activeTab === "add_past" && <AddPastTourForm />}
         {activeTab === "manage" && <ManageTours title="Tour hiện tại" />}
         {activeTab === "past" && <AdminPastTours />}
