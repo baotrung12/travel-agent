@@ -15,6 +15,11 @@ function clientIp(req: Request) {
   return req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
+// Tolerates values pasted into a hosting dashboard with surrounding quotes or whitespace
+function envValue(name: string) {
+  return process.env[name]?.trim().replace(/^(["'])(.*)\1$/, "$2").trim() || undefined;
+}
+
 // Constant-time comparison so response timing doesn't leak how much of a value matched
 function safeEqual(a: string, b: string) {
   const bufA = Buffer.from(a);
@@ -35,8 +40,11 @@ export async function POST(req: Request) {
   }
 
   const { email, password } = await req.json().catch(() => ({}));
-  const expectedEmail = process.env.ADMIN_EMAIL;
-  const expectedPassword = process.env.ADMIN_PASSWORD;
+  const expectedEmail = envValue("ADMIN_EMAIL");
+  const expectedPassword = envValue("ADMIN_PASSWORD");
+  if (!expectedEmail || !expectedPassword) {
+    console.error("Admin login unavailable: ADMIN_EMAIL and/or ADMIN_PASSWORD is not set for this environment");
+  }
 
   const valid =
     typeof email === "string" && typeof password === "string" && !!expectedEmail && !!expectedPassword &&
@@ -50,7 +58,15 @@ export async function POST(req: Request) {
   }
 
   attempts.delete(ip);
+  let token: string;
+  try {
+    token = signSession(expectedEmail);
+  } catch (error) {
+    // e.g. JWT_SECRET missing or shorter than 32 characters in production
+    console.error("Admin login failed to create session:", error);
+    return NextResponse.json({ error: "Máy chủ chưa được cấu hình đăng nhập. Vui lòng liên hệ quản trị kỹ thuật." }, { status: 500 });
+  }
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(SESSION_COOKIE, signSession(expectedEmail), sessionCookieOptions);
+  res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions);
   return res;
 }
