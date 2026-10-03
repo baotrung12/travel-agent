@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from "next/server";
+import {revalidateTourPages} from "@/lib/revalidatePublic";
 import {prisma} from "@/app/prisma";
 import {supabase} from "@/app/services/supabaseClient";
 import {Category} from "@/app/generated/prisma/enums";
@@ -82,6 +83,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     include: { pastSchedule: true },
   })
 
+  revalidateTourPages();
   return NextResponse.json(updatedPastTour)
 }
 
@@ -94,6 +96,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       prisma.pastTourSchedule.deleteMany({ where: { pastTourId: id } }),
       prisma.pastTour.delete({ where: { id } }),
     ])
+    revalidateTourPages();
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error deleting past tour:", error)

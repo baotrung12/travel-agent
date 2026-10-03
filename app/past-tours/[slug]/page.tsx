@@ -1,7 +1,6 @@
 // app/past-tours/[slug]/page.tsx
 
 import Link from "next/link";
-import {headers} from "next/headers";
 import {notFound} from "next/navigation";
 import {
   CalendarDaysIcon,
@@ -19,30 +18,30 @@ import DayPhotos from "@/app/components/tour-detail/DayPhotos";
 import {PastTour} from "@/app/components/EditPastTourForm";
 import {buildDuration} from "@/utils/dateUtils";
 import {CATEGORY_LABELS} from "@/utils/tourLabels";
+import {getPublishedPastTourBySlug, getPublishedPastTours} from "@/lib/data/publicTours";
 
 const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleDateString("vi-VN") : null);
 
-async function getBaseUrl() {
-  // Prefer env, otherwise derive from request headers
-  const envBase = process.env.NEXT_PUBLIC_BASE_URL;
-  if (envBase?.startsWith("http")) return envBase;
-  const host = (await headers()).get("host");
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  return host ? `${protocol}://${host}` : "";
+// Cached and refreshed every 5 minutes; admin changes refresh it immediately (see lib/revalidatePublic.ts)
+export const revalidate = 300;
+
+// Pages are generated on first visit and then served from cache
+export function generateStaticParams() {
+  return [];
+}
+
+export async function generateMetadata({params}: { params: Promise<{ slug: string }> }) {
+  const tour = await getPublishedPastTourBySlug(decodeURIComponent((await params).slug));
+  return tour ? { title: `${tour.title} | Edutour` } : {};
 }
 
 export default async function PastTourDetailPage({params}: { params: Promise<{ slug: string }> }) {
-  const {slug} = await params;
-  const baseUrl = await getBaseUrl();
+  const slug = decodeURIComponent((await params).slug);
+  const [found, otherTours] = await Promise.all([getPublishedPastTourBySlug(slug), getPublishedPastTours()]);
+  if (!found) return notFound();
+  const tour = found as unknown as PastTour & { slug: string };
 
-  const res = await fetch(`${baseUrl}/api/v1/past-tours/${slug}`, { cache: "no-store" });
-  if (!res.ok) return notFound();
-  const tour: PastTour & { slug: string } = await res.json();
-
-  const otherTours: (PastTour & { slug: string })[] = await fetch(`${baseUrl}/api/v1/past-tours`, { cache: "no-store" })
-    .then((r) => (r.ok ? r.json() : []))
-    .catch(() => []);
-  const moreTours = otherTours
+  const moreTours = (otherTours as unknown as (PastTour & { slug: string })[])
     .filter((t) => t.id !== tour.id)
     .sort((x, y) => Number(y.category === tour.category) - Number(x.category === tour.category))
     .slice(0, 3);

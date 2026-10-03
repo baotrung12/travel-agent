@@ -9,7 +9,7 @@ import PastTourFields, {buildPastTourPayload, newPastScheduleDay, PastTourFormSt
 import {Button, PageHeading} from "@/app/components/admin/ui";
 
 const generateSlug = (title: string) =>
-  slugify(title, {lower: true, locale: "vi", remove: /[*+~.()'"!:@]/g});
+  slugify(title, {lower: true, locale: "vi", remove: /[*+~.,()'"!:@?&/#%]/g});
 
 const generateTourCode = () => {
   const now = new Date();

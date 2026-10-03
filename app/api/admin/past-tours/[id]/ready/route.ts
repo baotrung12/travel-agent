@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+import {revalidateTourPages} from "@/lib/revalidatePublic";
 import {prisma} from "@/app/prisma";
 
 export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
@@ -9,5 +10,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     data: { ready: ready },
   });
 
+  revalidateTourPages();
   return NextResponse.json(tour);
 }

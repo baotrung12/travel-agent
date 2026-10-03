@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import {revalidateTourPages} from "@/lib/revalidatePublic";
 import {prisma} from "@/app/prisma";
 import {supabase} from "@/app/services/supabaseClient";
 import {Category} from "@/app/generated/prisma/enums";
@@ -64,5 +65,6 @@ export async function POST(req: Request) {
     include: { pastSchedule: true },
   });
 
+  revalidateTourPages();
   return NextResponse.json(newPastTour);
 }

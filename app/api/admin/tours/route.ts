@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import {revalidateTourPages} from "@/lib/revalidatePublic";
 import {prisma} from "@/app/prisma";
 import {sanitizeRichText} from "@/lib/sanitize";
 import {supabase} from "@/app/services/supabaseClient";
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
       },
     });
 
+    revalidateTourPages();
     return NextResponse.json(tour);
   } catch (error) {
     console.error(error);

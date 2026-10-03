@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
-import {headers} from "next/headers";
 import {
   ChevronRightIcon,
   ClockIcon,
@@ -20,6 +19,7 @@ import InfoAccordion, {InfoItem} from "@/app/components/tour-detail/InfoAccordio
 import {Tour} from "@/app/components/EditTourForm";
 import {CATEGORY_LABELS} from "@/utils/tourLabels";
 import {sanitizeRichText} from "@/lib/sanitize";
+import {getPublishedTourBySlug, getPublishedTours} from "@/lib/data/publicTours";
 
 const travelInfo: InfoItem[] = [
   {
@@ -54,28 +54,27 @@ const travelInfo: InfoItem[] = [
   },
 ];
 
-async function getBaseUrl() {
-  // Prefer env, otherwise derive from request headers
-  const envBase = process.env.NEXT_PUBLIC_BASE_URL;
-  if (envBase?.startsWith("http")) return envBase;
-  const host = (await headers()).get("host");
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  return host ? `${protocol}://${host}` : "";
+// Cached and refreshed every 5 minutes; admin changes refresh it immediately (see lib/revalidatePublic.ts)
+export const revalidate = 300;
+
+// Tour pages are generated on first visit and then served from cache
+export function generateStaticParams() {
+  return [];
+}
+
+export async function generateMetadata({params}: { params: Promise<{ slug: string }> }) {
+  const tour = await getPublishedTourBySlug(decodeURIComponent((await params).slug));
+  return tour ? { title: `${tour.title} | Edutour`, description: tour.summary || undefined } : {};
 }
 
 export default async function TourDetailPage({params}: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const baseUrl = await getBaseUrl();
-
-  const res = await fetch(`${baseUrl}/api/v1/tours/${slug}`, { cache: "no-store" });
-  if (!res.ok) return notFound();
-  const tour: Tour = await res.json();
+  const slug = decodeURIComponent((await params).slug);
+  const [found, allTours] = await Promise.all([getPublishedTourBySlug(slug), getPublishedTours()]);
+  if (!found) return notFound();
+  const tour = found as unknown as Tour;
 
   // Other published tours, same category first
-  const allTours: Tour[] = await fetch(`${baseUrl}/api/v1/tours`, { cache: "no-store" })
-    .then((r) => (r.ok ? r.json() : []))
-    .catch(() => []);
-  const relatedTours = allTours
+  const relatedTours = (allTours as unknown as Tour[])
     .filter((t) => t.id !== tour.id)
     .sort((x, y) => Number(y.category === tour.category) - Number(x.category === tour.category))
     .slice(0, 3);

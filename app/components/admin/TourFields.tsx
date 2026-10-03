@@ -24,7 +24,7 @@ export interface TourFormState {
 }
 
 export const generateSlug = (title: string) =>
-  slugify(title, {lower: true, locale: "vi", remove: /[*+~.()'"!:@]/g});
+  slugify(title, {lower: true, locale: "vi", remove: /[*+~.,()'"!:@?&/#%]/g});
 
 export const newScheduleDay = () => ({key: crypto.randomUUID(), title: "", description: ""});
 
