@@ -4,6 +4,7 @@ import slugify from "slugify";
 import {PlusIcon} from "@heroicons/react/24/outline";
 import {Category} from "@/app/generated/prisma/enums";
 import ImagePicker from "@/app/components/ImagePicker";
+import type {ImageItem} from "@/app/services/uploadImage";
 import ScheduleItem from "@/app/components/ScheduleItem";
 import {Button, CATEGORY_LABELS, Field, Input, Section, Select, Textarea} from "@/app/components/admin/ui";
 
@@ -19,8 +20,7 @@ export interface TourFormState {
   destination: string;
   category: Category;
   tourSchedule: { id?: string; key?: string; title: string; description: string }[];
-  imageUrls: string[]; // already uploaded
-  images: File[];      // new files to upload
+  images: ImageItem[]; // ordered; first = cover image
 }
 
 export const generateSlug = (title: string) =>
@@ -116,10 +116,7 @@ export default function TourFields({form, setForm, layout = "split", autoSlug = 
 
       <Section layout={layout} title="Hình ảnh" description="Ảnh đầu tiên được dùng làm ảnh bìa của tour.">
         <div className="sm:col-span-full">
-          <ImagePicker
-            initialFiles={form.imageUrls}
-            onChange={(files, urls) => setForm((prev) => ({...prev, images: files, imageUrls: urls}))}
-          />
+          <ImagePicker value={form.images} onChange={(images) => set("images", images)} />
         </div>
       </Section>
 

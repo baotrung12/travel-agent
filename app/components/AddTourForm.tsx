@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import toast from "react-hot-toast";
 import {ArrowLeftIcon} from "@heroicons/react/24/outline";
 import {Category} from "@/app/generated/prisma/enums";
-import {uploadImages} from "@/app/services/uploadImage";
+import {uploadOrdered} from "@/app/services/uploadImage";
 import TourFields, {newScheduleDay, TourFormState} from "@/app/components/admin/TourFields";
 import {Button, PageHeading} from "@/app/components/admin/ui";
 
@@ -28,7 +28,6 @@ export default function AddTourForm({ onSaved, onCancel }: { onSaved?: () => voi
     destination: "",
     category: Category.STUDENT,
     tourSchedule: [newScheduleDay()],
-    imageUrls: [],
     images: [],
   }));
   const [saving, setSaving] = useState(false);
@@ -37,7 +36,7 @@ export default function AddTourForm({ onSaved, onCancel }: { onSaved?: () => voi
     e.preventDefault();
     setSaving(true);
     try {
-      const uploaded = await uploadImages(form.images, "tour-images");
+      const images = await uploadOrdered(form.images, "tour-images");
       const response = await fetch("/api/admin/tours", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +52,7 @@ export default function AddTourForm({ onSaved, onCancel }: { onSaved?: () => voi
           destination: form.destination,
           category: form.category,
           tourSchedule: form.tourSchedule.map(({title, description}) => ({title, description})),
-          images: [...form.imageUrls, ...(uploaded || [])],
+          images,
         }),
       });
 

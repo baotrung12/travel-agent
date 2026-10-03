@@ -3,7 +3,7 @@ import React, {useEffect, useState} from "react";
 import toast from "react-hot-toast";
 import {Category} from "@/app/generated/prisma/enums";
 import {TourSchedule} from "@/app/components/TourSchedule";
-import {uploadImages} from "@/app/services/uploadImage";
+import {uploadOrdered} from "@/app/services/uploadImage";
 import TourFields, {TourFormState} from "@/app/components/admin/TourFields";
 
 export interface Tour {
@@ -42,8 +42,7 @@ export default function EditTourForm({ tour, onSaved, onSavingChange }: EditTour
     destination: tour.destination ?? "",
     category: tour.category,
     tourSchedule: (tour.tourSchedule || []).map((item: any) => ({id: item.id, title: item.title, description: item.description})),
-    imageUrls: tour.imageUrls || [],
-    images: [],
+    images: tour.imageUrls || [],
   });
   const [saving, setSaving] = useState(false);
 
@@ -53,7 +52,7 @@ export default function EditTourForm({ tour, onSaved, onSavingChange }: EditTour
     e.preventDefault();
     setSaving(true);
     try {
-      const uploaded = await uploadImages(form.images, "tour-images");
+      const tourImages = await uploadOrdered(form.images, "tour-images");
       const res = await fetch(`/api/admin/tours/${tour.id}`, {
         method: "PATCH",
         headers: { 'Content-Type': 'application/json' },
@@ -69,7 +68,7 @@ export default function EditTourForm({ tour, onSaved, onSavingChange }: EditTour
           destination: form.destination,
           category: form.category,
           tourSchedule: form.tourSchedule.map(({title, description}) => ({title, description})),
-          tourImages: [...form.imageUrls, ...(uploaded || [])],
+          tourImages,
         }),
       });
 

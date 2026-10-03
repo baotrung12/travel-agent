@@ -3,6 +3,7 @@ import React from "react";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {Category} from "@/app/generated/prisma/enums";
 import ImagePicker from "@/app/components/ImagePicker";
+import type {ImageItem} from "@/app/services/uploadImage";
 import {Button, CATEGORY_LABELS, Field, IconButton, Input, Section, Select, Textarea} from "@/app/components/admin/ui";
 
 export interface PastScheduleDay {
@@ -11,8 +12,7 @@ export interface PastScheduleDay {
   date: string;          // yyyy-mm-dd
   title: string;
   description: string;
-  imageUrls: string[];   // already uploaded
-  files: File[];         // new files to upload
+  images: ImageItem[];   // ordered photos of the day
 }
 
 export interface PastTourFormState {
@@ -26,13 +26,12 @@ export interface PastTourFormState {
   feedback: string;
   destination: string;
   category: Category;
-  tourImageUrls: string[];
-  tourImageFiles: File[];
+  tourImages: ImageItem[]; // ordered; first = cover image
   pastSchedule: PastScheduleDay[];
 }
 
 export const newPastScheduleDay = (): PastScheduleDay => ({
-  key: crypto.randomUUID(), date: "", title: "", description: "", imageUrls: [], files: [],
+  key: crypto.randomUUID(), date: "", title: "", description: "", images: [],
 });
 
 export const toDateInput = (value?: string | null) => (value ? value.split("T")[0] : "");
@@ -103,10 +102,7 @@ export default function PastTourFields({form, setForm, layout = "split"}: {
 
       <Section layout={layout} title="Hình ảnh" description="Ảnh đầu tiên được dùng làm ảnh bìa.">
         <div className="sm:col-span-full">
-          <ImagePicker
-            initialFiles={form.tourImageUrls}
-            onChange={(files, urls) => setForm((prev) => ({...prev, tourImageFiles: files, tourImageUrls: urls}))}
-          />
+          <ImagePicker value={form.tourImages} onChange={(images) => set("tourImages", images)} />
         </div>
       </Section>
 
@@ -137,10 +133,7 @@ export default function PastTourFields({form, setForm, layout = "split"}: {
                 <div className="sm:col-span-full">
                   <span className="block text-sm/6 font-medium text-gray-900">Ảnh trong ngày</span>
                   <div className="mt-2">
-                    <ImagePicker
-                      initialFiles={day.imageUrls}
-                      onChange={(files, urls) => updateDay(index, {files, imageUrls: urls})}
-                    />
+                    <ImagePicker value={day.images} onChange={(images) => updateDay(index, {images})} />
                   </div>
                 </div>
               </div>
@@ -161,24 +154,21 @@ export default function PastTourFields({form, setForm, layout = "split"}: {
   );
 }
 
-// Uploads new images and builds the JSON body expected by the past-tours API.
+// Uploads new images (keeping their order) and builds the JSON body expected by the past-tours API.
 export async function buildPastTourPayload(
   form: PastTourFormState,
-  uploadImages: (files: File[], bucket: string) => Promise<string[]>,
+  uploadOrdered: (items: ImageItem[], bucket: string) => Promise<string[]>,
 ) {
-  const uploadedTourImages = await uploadImages(form.tourImageFiles, "tour-images");
+  const tourImages = await uploadOrdered(form.tourImages, "tour-images");
   const pastSchedule = await Promise.all(
-    form.pastSchedule.map(async (day) => {
-      const uploaded = await uploadImages(day.files, "tour-images");
-      return {
-        id: day.id ?? undefined,
-        // schedule date falls back to the tour start date so it is never empty
-        date: day.date || form.departureStart,
-        title: day.title,
-        description: day.description,
-        imageUrls: [...day.imageUrls, ...(uploaded || [])],
-      };
-    })
+    form.pastSchedule.map(async (day) => ({
+      id: day.id ?? undefined,
+      // schedule date falls back to the tour start date so it is never empty
+      date: day.date || form.departureStart,
+      title: day.title,
+      description: day.description,
+      imageUrls: await uploadOrdered(day.images, "tour-images"),
+    }))
   );
 
   return {
@@ -191,7 +181,7 @@ export async function buildPastTourPayload(
     feedback: form.feedback,
     destination: form.destination,
     category: form.category,
-    tourImages: [...form.tourImageUrls, ...(uploadedTourImages || [])],
+    tourImages,
     pastSchedule,
   };
 }

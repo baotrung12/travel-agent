@@ -4,7 +4,7 @@ import slugify from "slugify";
 import toast from "react-hot-toast";
 import {ArrowLeftIcon} from "@heroicons/react/24/outline";
 import {Category} from "@/app/generated/prisma/enums";
-import {uploadImages} from "@/app/services/uploadImage";
+import {uploadOrdered} from "@/app/services/uploadImage";
 import PastTourFields, {buildPastTourPayload, newPastScheduleDay, PastTourFormState} from "@/app/components/admin/PastTourFields";
 import {Button, PageHeading} from "@/app/components/admin/ui";
 
@@ -31,8 +31,7 @@ export default function AddPastTourForm({ onSaved, onCancel }: { onSaved?: () =>
     feedback: "",
     destination: "",
     category: Category.STUDENT,
-    tourImageUrls: [],
-    tourImageFiles: [],
+    tourImages: [],
     pastSchedule: [newPastScheduleDay()],
   }));
   const [saving, setSaving] = useState(false);
@@ -41,7 +40,7 @@ export default function AddPastTourForm({ onSaved, onCancel }: { onSaved?: () =>
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = await buildPastTourPayload(form, uploadImages);
+      const payload = await buildPastTourPayload(form, uploadOrdered);
       const res = await fetch("/api/admin/past-tours", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

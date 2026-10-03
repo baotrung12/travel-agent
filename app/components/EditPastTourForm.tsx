@@ -1,7 +1,7 @@
 "use client";
 import React, {useEffect, useState} from "react";
 import toast from "react-hot-toast";
-import {uploadImages} from "@/app/services/uploadImage";
+import {uploadOrdered} from "@/app/services/uploadImage";
 import PastTourFields, {buildPastTourPayload, PastTourFormState, toDateInput} from "@/app/components/admin/PastTourFields";
 import {Category} from "@/app/generated/prisma/enums";
 
@@ -49,16 +49,14 @@ export default function EditPastTourForm({ tourId, onSaved, onSavingChange }: {
         feedback: data.feedback ?? "",
         destination: data.destination ?? "",
         category: data.category,
-        tourImageUrls: data.tourImages ?? [],
-        tourImageFiles: [],
+        tourImages: data.tourImages ?? [],
         pastSchedule: (data.pastSchedule ?? []).map((day: any) => ({
           id: day.id,
           key: day.id,
           date: toDateInput(day.date),
           title: day.title ?? "",
           description: day.description ?? "",
-          imageUrls: day.imageUrls ?? [],
-          files: [],
+          images: day.imageUrls ?? [],
         })),
       });
     };
@@ -70,7 +68,7 @@ export default function EditPastTourForm({ tourId, onSaved, onSavingChange }: {
     if (!form) return;
     setSaving(true);
     try {
-      const payload = await buildPastTourPayload(form, uploadImages);
+      const payload = await buildPastTourPayload(form, uploadOrdered);
       const res = await fetch(`/api/admin/past-tours/${tourId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

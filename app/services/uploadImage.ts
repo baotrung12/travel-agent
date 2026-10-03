@@ -50,3 +50,14 @@ export async function uploadImages(files: File[], bucket: string): Promise<strin
 
   return imageUrls;
 }
+
+// An image in a form: an already-uploaded URL or a newly picked file
+export type ImageItem = string | File;
+
+// Uploads the new files and returns all URLs in the same order (first = cover image).
+export async function uploadOrdered(items: ImageItem[], bucket: string): Promise<string[]> {
+  const files = items.filter((item): item is File => item instanceof File);
+  const uploaded = await uploadImages(files, bucket);
+  let next = 0;
+  return items.map((item) => (item instanceof File ? uploaded[next++] : item));
+}
