@@ -11,7 +11,7 @@ export default function Breadcrumbs() {
     <nav className="text-sm text-gray-600 mb-6">
       <ol className="flex flex-wrap gap-2 items-center">
         <li>
-          <Link href="/" className="text-blue-600 hover:underline">Trang chủ</Link>
+          <Link href="/" className="text-brand-600 hover:underline">Trang chủ</Link>
         </li>
         {segments.map((segment, i) => {
           const href = "/" + segments.slice(0, i + 1).join("/");
@@ -20,7 +20,7 @@ export default function Breadcrumbs() {
           return (
             <li key={i} className="flex items-center gap-2">
               <span>/</span>
-              <Link href={href} className="text-blue-600 hover:underline capitalize">
+              <Link href={href} className="text-brand-600 hover:underline capitalize">
                 {label}
               </Link>
             </li>

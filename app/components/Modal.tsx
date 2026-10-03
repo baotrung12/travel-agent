@@ -1,70 +1,72 @@
-import {XMarkIcon} from "@heroicons/react/16/solid";
+"use client";
+import React, {useEffect} from "react";
+import {XMarkIcon} from "@heroicons/react/24/outline";
+import {Button} from "@/app/components/admin/ui";
 
+// Slide-over panel (Tailwind UI pattern) used for editing records.
 export default function Modal({
-                                title,
-                                children,
-                                formId,
-                                onClose,
-                                actions, // optional array of buttons
-                                size = "lg", // optional size
-                              }: {
+  title,
+  description,
+  children,
+  formId,
+  saving = false,
+  onClose,
+  actions,
+}: {
   title: string;
+  description?: string;
   children: React.ReactNode;
   formId?: string;
+  saving?: boolean;
   onClose: () => void;
   actions?: React.ReactNode;
-  size?: "sm" | "md" | "lg";
 }) {
-  const widthClass =
-    size === "sm"
-      ? "max-w-md"
-      : size === "md"
-        ? "max-w-2xl"
-        : "max-w-4xl";
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
-      <div
-        className={`bg-white w-full ${widthClass} rounded-md shadow-lg flex flex-col max-h-[90vh]`}
-      >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-300 font-semibold text-lg sticky top-0 bg-white z-10">
-          {title}
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-3 text-gray-500 hover:text-gray-700 cursor-pointer"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
-
-
-        {/* Content */}
-        <div className="overflow-y-auto px-6 py-4 flex-1">{children}</div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-300 sticky bottom-0 bg-white z-10">
-          <div className="flex gap-4 mt-4">
-            {actions ? (
-              actions
-            ) : formId ? (
-              <>
-                <button
-                  type="submit"
-                  form={formId}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md"
-                >
-                  Lưu
-                </button>
+    <div className="relative z-50" role="dialog" aria-modal="true">
+      <div className="fixed inset-0 bg-gray-500/75" onClick={onClose} />
+      <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+        <div className="pointer-events-auto w-screen max-w-3xl">
+          <div className="flex h-full flex-col bg-white shadow-xl">
+            <div className="bg-brand-700 px-4 py-6 sm:px-6">
+              <div className="flex items-start justify-between">
+                <h2 className="text-base font-semibold text-white">{title}</h2>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="text-gray-600 hover:underline"
+                  className="ml-3 rounded-md text-brand-200 hover:text-white cursor-pointer"
+                  aria-label="Đóng"
                 >
-                  Hủy
+                  <XMarkIcon className="size-6" />
                 </button>
-              </>
-            ) : null}
+              </div>
+              {description && <p className="mt-1 text-sm text-brand-100">{description}</p>}
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-gray-50 px-4 py-6 sm:px-6">{children}</div>
+
+            {(actions || formId) && (
+              <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
+                {actions ?? (
+                  <>
+                    <Button variant="secondary" onClick={onClose}>Hủy</Button>
+                    <Button type="submit" form={formId} disabled={saving}>
+                      {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

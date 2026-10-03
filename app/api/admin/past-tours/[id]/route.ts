@@ -60,6 +60,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       category: category as Category,
       tourImages, // ✅ directly save URLs
       pastSchedule: {
+        // days removed in the form are deleted
+        deleteMany: { id: { notIn: pastSchedule.filter((day: any) => day.id).map((day: any) => day.id) } },
         upsert: pastSchedule.map((day: any) => ({
           where: { id: day.id ?? "" }, // update if id exists
           update: {
@@ -81,4 +83,20 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
   })
 
   return NextResponse.json(updatedPastTour)
+}
+
+
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
+
+  try {
+    await prisma.$transaction([
+      prisma.pastTourSchedule.deleteMany({ where: { pastTourId: id } }),
+      prisma.pastTour.delete({ where: { id } }),
+    ])
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting past tour:", error)
+    return NextResponse.json({ error: "Failed to delete past tour" }, { status: 500 })
+  }
 }

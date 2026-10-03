@@ -17,7 +17,7 @@ export default function TourSchedule({ schedule }: { schedule: TourSchedule[] })
 
   return (
     <div className="bg-white mt-12 p-6 rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold text-blue-700 mb-6">Lịch trình chi tiết</h2>
+      <h2 className="text-2xl font-bold text-brand-700 mb-6">Lịch trình chi tiết</h2>
       <div className="space-y-4">
         {schedule.map((item, index) => {
           const isOpen = openIndex === index;
@@ -30,7 +30,7 @@ export default function TourSchedule({ schedule }: { schedule: TourSchedule[] })
                 <span className="font-semibold text-gray-800">
                   {item.title}
                 </span>
-                <span className="text-blue-600">
+                <span className="text-brand-600">
                   {isOpen ? <FaChevronUp /> : <FaChevronDown />}
                 </span>
               </button>

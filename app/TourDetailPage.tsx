@@ -43,7 +43,7 @@ export default function TourDetailPage({ params }: { params: { id: string } }) {
         <p className="text-lg text-gray-700 mb-6">{tour.description}</p>
 
         {/* Price */}
-        <p className="text-2xl font-semibold text-blue-600 mb-6">
+        <p className="text-2xl font-semibold text-brand-600 mb-6">
           Giá: {tour.price}
         </p>
 
@@ -58,7 +58,7 @@ export default function TourDetailPage({ params }: { params: { id: string } }) {
         </ul>
 
         {/* Booking Button */}
-        <button className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition">
+        <button className="bg-brand-600 text-white px-6 py-3 rounded-md hover:bg-brand-700 transition">
           Đặt Tour Ngay
         </button>
       </div>

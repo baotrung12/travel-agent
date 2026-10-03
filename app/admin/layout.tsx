@@ -1,26 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
-import AdminAuthPopup from "@/app/components/AdminAuthPopup";
+import AdminLoginForm from "@/app/components/AdminLoginForm";
+import { checkAdminSession } from "@/app/services/adminAuth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [authenticated, setAuthenticated] = useState(false);
+  // null = not checked yet, avoids flashing the login form for logged-in users
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (token) {
-      setAuthenticated(true);
-    }
+    checkAdminSession().then(setAuthenticated);
   }, []);
 
-  return (
-    <div>
-      {authenticated ? (
-        children
-      ) : (
-        <div className="flex items-center justify-center h-screen">
-          <AdminAuthPopup />
-        </div>
-      )}
-    </div>
-  );
+  if (authenticated === null) return null;
+
+  if (!authenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 px-4">
+        <AdminLoginForm onSuccess={() => setAuthenticated(true)} />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }

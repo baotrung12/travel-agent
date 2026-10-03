@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 import PastTourCard from "@/app/components/PastTourCard";
 import {Category} from "@/app/generated/prisma/enums";
 import TourSection from "@/app/components/TourList";
+import SectionHeading from "@/app/components/SectionHeading";
 
 export default function PastTours() {
   const [pastTours, setPastTours] = useState<any[]>([]);
@@ -21,13 +22,17 @@ export default function PastTours() {
 
 
   return (
-    <section className="bg-gray-100 py-12" id="pastTours">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        {/* Title */}
-        <h2 className="text-3xl font-bold mb-6">Chùm tours trường học</h2>
+    <section className="scroll-mt-16 bg-slate-50 py-20" id="pastTours">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="Tour trường học"
+          title="Chùm tours trường học"
+          subtitle="Các chuyến đi chúng tôi đã tổ chức cho học sinh và giáo viên."
+        />
 
-        {/* Tour Cards */}
-        <TourSection tours={pastTours} />
+        <div className="mt-12">
+          <TourSection tours={pastTours} />
+        </div>
       </div>
     </section>
   );

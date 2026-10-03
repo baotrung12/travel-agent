@@ -1,90 +1,134 @@
 "use client";
 
-import { useState } from "react";
+import {useState} from "react";
+import Link from "next/link";
+import {CheckCircleIcon, MinusIcon, PlusIcon} from "@heroicons/react/24/outline";
 
-export default function BookingSection() {
+const formatVnd = (value: number) => value.toLocaleString("vi-VN") + " đ";
+
+function Counter({label, hint, value, min, onChange}: {
+  label: string;
+  hint: string;
+  value: number;
+  min: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <p className="text-sm font-medium text-slate-900">{label}</p>
+        <p className="text-xs text-brand-700">{hint}</p>
+      </div>
+      <div className="flex items-center gap-x-3">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          disabled={value <= min}
+          aria-label={`Giảm ${label}`}
+          className="rounded-full bg-white p-1.5 text-brand-700 ring-1 ring-slate-300 hover:bg-brand-50 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+        >
+          <MinusIcon className="size-4" />
+        </button>
+        <span className="w-5 text-center text-sm font-semibold text-gray-900">{value}</span>
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          aria-label={`Tăng ${label}`}
+          className="rounded-full bg-white p-1.5 text-brand-700 ring-1 ring-slate-300 hover:bg-brand-50 cursor-pointer"
+        >
+          <PlusIcon className="size-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function BookingSection({title, price, tourCode, duration, departurePoint}: {
+  title: string;
+  price: number;
+  tourCode: string;
+  duration?: string;
+  departurePoint?: string;
+}) {
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
 
-  const adultPrice = 3990000;
-  const childPrice = 1995000;
+  const hasPrice = price > 0;
+  const childPrice = Math.round(price / 2);
+  const totalPrice = adults * price + children * childPrice;
 
-  const totalGuests = adults + children + babies;
-  const totalPrice = adults * adultPrice + children * childPrice;
+  // Prefills the contact form with this tour and the chosen guests
+  const guests = [`${adults} người lớn`, children && `${children} trẻ em`, babies && `${babies} em bé`].filter(Boolean).join(", ");
+  const contactHref = `/?${new URLSearchParams({
+    tour: title,
+    message: hasPrice ? `Tôi muốn đặt tour cho ${guests} (mã tour ${tourCode}).` : `Tôi muốn nhận báo giá tour (mã tour ${tourCode}).`,
+  })}#contactUs`;
 
   return (
-    <div className="bg-gray-50 p-6 rounded-xl shadow-md mt-10">
-      {/* Tour Schedule */}
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Lịch khởi hành</h2>
-      <div className="grid grid-cols-2 gap-4 mb-6 text-gray-700">
-        <p>Ngày khởi hành: <strong>22/11/2025</strong></p>
-        <p>Ngày kết thúc: <strong>25/11/2025</strong></p>
-        <p>Thời gian tour: <strong>4 ngày 3 đêm</strong></p>
-        <p>Mã tour: <strong>STN084-2025-02789</strong></p>
+    <div className="overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-slate-200">
+      {/* Price header */}
+      <div className="bg-brand-950 px-6 py-5">
+        <p className="text-xs font-medium tracking-wide text-brand-200 uppercase">Giá từ</p>
+        <p className="mt-1 flex items-baseline gap-x-1">
+          <span className="text-3xl font-bold tracking-tight text-amber-300">{hasPrice ? formatVnd(price) : "Liên hệ"}</span>
+          {hasPrice && <span className="text-sm text-brand-200">/ khách</span>}
+        </p>
+        <p className="mt-2 text-sm text-brand-100">Mã tour: <span className="font-semibold text-white">{tourCode}</span></p>
       </div>
 
-      {/* Pricing Section */}
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Giá tour</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-gray-700">
-        {/* Left: Adult + Children */}
-        <div className="space-y-2">
-          <p>Người lớn: <strong>3,990,000 đ</strong></p>
-          <p>Trẻ em (05 - dưới 12 tuổi): <strong>1,995,000 đ</strong></p>
-        </div>
+      <div className="px-6 pb-6">
+        {(duration || departurePoint) && (
+          <dl className="space-y-2 border-b border-slate-200 py-4 text-sm">
+            {duration && (
+              <div className="flex justify-between gap-x-4">
+                <dt className="text-slate-500">Thời gian</dt>
+                <dd className="font-medium text-slate-900">{duration}</dd>
+              </div>
+            )}
+            {departurePoint && (
+              <div className="flex justify-between gap-x-4">
+                <dt className="text-slate-500">Khởi hành</dt>
+                <dd className="text-right font-medium text-slate-900">{departurePoint}</dd>
+              </div>
+            )}
+          </dl>
+        )}
 
-        {/* Right: Baby Info */}
-        <div className="space-y-2">
-          <p>Trẻ em dưới 05 tuổi: <strong>Miễn phí</strong></p>
-          <p className="text-sm text-gray-600">Bố mẹ tự lo cho bé</p>
-          <p>Phụ thu phòng đơn: <strong>1,000,000 đ</strong></p>
-        </div>
+        {hasPrice && (
+          <>
+            <p className="mt-4 text-xs font-semibold tracking-wide text-slate-500 uppercase">Số người</p>
+            <div className="divide-y divide-slate-100">
+              <Counter label="Người lớn" hint={formatVnd(price)} value={adults} min={1} onChange={setAdults} />
+              <Counter label="Trẻ em" hint={`5 – 11 tuổi · ${formatVnd(childPrice)}`} value={children} min={0} onChange={setChildren} />
+              <Counter label="Em bé" hint="Dưới 5 tuổi · Miễn phí" value={babies} min={0} onChange={setBabies} />
+            </div>
+
+            <div className="mt-2 flex items-center justify-between rounded-lg bg-brand-50 px-4 py-3">
+              <span className="text-sm font-semibold text-brand-950">Tạm tính ({adults + children + babies} khách)</span>
+              <span className="text-lg font-bold text-red-600">{formatVnd(totalPrice)}</span>
+            </div>
+          </>
+        )}
+
+        <Link
+          href={contactHref}
+          className="mt-5 block w-full rounded-lg bg-brand-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-brand-500"
+        >
+          Liên hệ đặt tour
+        </Link>
+        <Link
+          href={contactHref}
+          className="mt-3 block w-full rounded-lg bg-white px-4 py-3 text-center text-sm font-semibold text-brand-700 ring-1 ring-brand-600 ring-inset hover:bg-brand-50"
+        >
+          Tư vấn miễn phí
+        </Link>
+
+        <ul className="mt-5 space-y-2 text-xs text-slate-500">
+          <li className="flex gap-x-2"><CheckCircleIcon className="size-4 flex-none text-green-600" />Xác nhận lịch khởi hành phù hợp với đoàn</li>
+          <li className="flex gap-x-2"><CheckCircleIcon className="size-4 flex-none text-green-600" />Đã bao gồm bảo hiểm du lịch</li>
+        </ul>
       </div>
-
-      {/* Guest Selector */}
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Chọn số lượng khách</h2>
-      <div className="space-y-4 mb-6">
-        {/* Adults */}
-        <div className="flex items-center justify-between">
-          <label className="font-medium">Người lớn</label>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setAdults(Math.max(1, adults - 1))} className="px-3 py-1 bg-gray-300 rounded">−</button>
-            <span>{adults}</span>
-            <button onClick={() => setAdults(adults + 1)} className="px-3 py-1 bg-gray-300 rounded">+</button>
-          </div>
-        </div>
-
-        {/* Children */}
-        <div className="flex items-center justify-between">
-          <label className="font-medium">Trẻ em (5 - 12 tuổi)</label>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setChildren(Math.max(0, children - 1))} className="px-3 py-1 bg-gray-300 rounded">−</button>
-            <span>{children}</span>
-            <button onClick={() => setChildren(children + 1)} className="px-3 py-1 bg-gray-300 rounded">+</button>
-          </div>
-        </div>
-
-        {/* Babies */}
-        <div className="flex items-center justify-between">
-          <label className="font-medium">Trẻ em dưới 5 tuổi</label>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setBabies(Math.max(0, babies - 1))} className="px-3 py-1 bg-gray-300 rounded">−</button>
-            <span>{babies}</span>
-            <button onClick={() => setBabies(babies + 1)} className="px-3 py-1 bg-gray-300 rounded">+</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <div className="text-lg text-gray-800 mb-6">
-        <p>Tổng số khách: <strong>{totalGuests}</strong></p>
-        <p>Tổng tiền: <strong>{totalPrice.toLocaleString("vi-VN")} đ</strong></p>
-      </div>
-
-      {/* Booking Button */}
-      <button className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition">
-        Đặt tour
-      </button>
     </div>
   );
 }

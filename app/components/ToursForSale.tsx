@@ -2,9 +2,7 @@
 
 import {useEffect, useState} from "react";
 import TourCard from "@/app/components/TourCard";
-import TourList from "@/app/components/TourList";
-import TourSection from "@/app/components/TourList";
-import PastTourCard from "@/app/components/PastTourCard";
+import SectionHeading from "@/app/components/SectionHeading";
 
 export default function ToursForSale() {
   const [tours, setTours] = useState<any[]>([]);
@@ -17,12 +15,16 @@ export default function ToursForSale() {
   }, []);
 
   return (
-    <section className="py-16 bg-white" id="tourForSale">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold mb-6">✨ Chùm tour phổ biến</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section className="scroll-mt-16 bg-white py-20" id="tourForSale">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="Tour nổi bật"
+          title="Chùm tour phổ biến"
+          subtitle="Những hành trình học tập và trải nghiệm được nhiều trường học lựa chọn."
+        />
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {tours.map((tour) => (
-            <TourCard tour={tour} />
+            <TourCard key={tour.id} tour={tour} />
           ))}
         </div>
       </div>

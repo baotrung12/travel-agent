@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {prisma} from "@/app/prisma";
+import {sanitizeRichText} from "@/lib/sanitize";
 import {supabase} from "@/app/services/supabaseClient";
 import {Category} from "@/app/generated/prisma/enums";
 
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
         tourSchedule: {
           create: scheduleArray.map((item: any) => ({
             title: item.title,
-            description: item.description,
+            description: sanitizeRichText(item.description),
           })),
         },
       },

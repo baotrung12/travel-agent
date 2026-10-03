@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse} from "next/server";
 import {supabase} from "@/app/services/supabaseClient";
 import {prisma} from "@/app/prisma";
+import {sanitizeRichText} from "@/lib/sanitize";
 import {Category} from "@/app/generated/prisma/enums";
 
 export async function GET(
@@ -32,13 +33,14 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     tourCode,
     duration,
     price,
+    summary,
+    promotion,
+    departurePoint,
     destination,
     category,
     tourSchedule,
     tourImages,
   } = body
-
-  console.log("tourSchedule:", tourSchedule)
 
   const scheduleArray = Array.isArray(tourSchedule)
     ? tourSchedule
@@ -53,6 +55,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       tourCode,
       duration,
       price: Number(price),
+      summary,
+      promotion,
+      departurePoint,
       destination,
       category: category as Category,
       imageUrls: tourImages,
@@ -60,11 +65,27 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
         deleteMany: {},
         create: scheduleArray.map((item: any) => ({
           title: item.title,
-          description: item.description,
+          description: sanitizeRichText(item.description),
         })),
       },
     },
   })
 
   return NextResponse.json(updatedTour)
+}
+
+
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
+
+  try {
+    await prisma.$transaction([
+      prisma.tourSchedule.deleteMany({ where: { tourId: id } }),
+      prisma.tour.delete({ where: { id } }),
+    ])
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting tour:", error)
+    return NextResponse.json({ error: "Failed to delete tour" }, { status: 500 })
+  }
 }

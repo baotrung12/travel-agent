@@ -75,3 +75,23 @@ model PastTourSchedule {
   pastTour    PastTour @relation(fields: [pastTourId], references: [id])
   pastTourId  String
 }
+
+enum ContactStatus {
+  NEW
+  CONTACTED
+  DONE
+}
+
+model ContactRequest {
+  id        String        @id @default(uuid())
+  name      String
+  phone     String
+  email     String
+  message   String?
+  tourTitle String?
+  status    ContactStatus @default(NEW)
+  emailSent Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([status, createdAt])
+}

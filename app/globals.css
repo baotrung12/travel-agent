@@ -4,21 +4,27 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1e293b; /* slate-800 */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Be Vietnam Pro', sans-serif;
+  --font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand purple, sampled from the logo (#862C8C) */
+  --color-brand-50: #fbf4fb;
+  --color-brand-100: #f5e6f6;
+  --color-brand-200: #ebcdec;
+  --color-brand-300: #dba6dd;
+  --color-brand-400: #c674c9;
+  --color-brand-500: #ad4bb1;
+  --color-brand-600: #932f97;
+  --color-brand-700: #7a267d;
+  --color-brand-800: #642267;
+  --color-brand-900: #531f55;
+  --color-brand-950: #350a37;
 }
 
 body {
@@ -42,10 +48,6 @@ body {
     align-items: center;
 }
 
-ul {
-    list-style: disc;
-    padding-left: 1.25rem;
-}
 
 
 /* Basic editor styles */
@@ -74,6 +76,14 @@ ul {
     }
 
     /* List styles */
+    ul {
+        list-style: disc;
+    }
+
+    ol {
+        list-style: decimal;
+    }
+
     ul,
     ol {
         padding: 0 1rem;

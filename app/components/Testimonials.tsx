@@ -18,7 +18,7 @@ export default function Testimonials({
 }) {
   return (
     <section className="bg-white p-6 rounded-xl shadow-md">
-      <h3 className="text-2xl font-bold text-blue-700 mb-6">{title}</h3>
+      <h3 className="text-2xl font-bold text-brand-700 mb-6">{title}</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {items.map((t, i) => (

@@ -21,8 +21,8 @@ export default function PastTourHeroHeader({
   return (
     <section className="bg-gray-100 p-6 mb-5 rounded-xl shadow-md">
       <div className="mb-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-blue-800">{title}</h1>
-        <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mt-1">{dateTitle}</h2>
+        <h1 className="text-3xl md:text-4xl font-bold text-brand-800">{title}</h1>
+        <h2 className="text-xl md:text-2xl font-semibold text-brand-700 mt-1">{dateTitle}</h2>
         <p className="text-gray-600 mt-2">{subtitle}</p>
       </div>
 
@@ -33,7 +33,7 @@ export default function PastTourHeroHeader({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {stats.map((s, i) => (
           <div key={i} className="bg-gray-50 rounded-lg p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-blue-700">{s.value}</p>
+            <p className="text-2xl font-bold text-brand-700">{s.value}</p>
             <p className="text-gray-600">{s.label}</p>
           </div>
         ))}

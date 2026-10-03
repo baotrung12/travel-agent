@@ -1,29 +1,26 @@
 "use client";
-import { useState } from "react";
-import ImagePicker from "./ImagePicker";
+import React, {useState} from "react";
 import slugify from "slugify";
-import {PlusIcon} from "@heroicons/react/24/solid";
+import toast from "react-hot-toast";
+import {ArrowLeftIcon} from "@heroicons/react/24/outline";
 import {Category} from "@/app/generated/prisma/enums";
 import {uploadImages} from "@/app/services/uploadImage";
-import toast from "react-hot-toast";
+import PastTourFields, {buildPastTourPayload, newPastScheduleDay, PastTourFormState} from "@/app/components/admin/PastTourFields";
+import {Button, PageHeading} from "@/app/components/admin/ui";
 
-interface FormState {
-  title: string;
-  tourCode: string;
-  departureStart: string;
-  departureEnd: string;
-  duration: string;
-  price: string;
-  participants: string;
-  feedback: string;
-  destination: string;
-  category: Category;        // ✅ allow both STUDENT and TEACHER
-  tourImages: File[];
-  pastSchedule: { date: string; title: string; description: string; imageFiles: File[] }[];
-}
+const generateSlug = (title: string) =>
+  slugify(title, {lower: true, locale: "vi", remove: /[*+~.()'"!:@]/g});
 
-export default function AddPastTourForm() {
-  const [form, setForm] = useState<FormState>({
+const generateTourCode = () => {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0"); // months are 0-based
+  const random = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+  return `PAST-TOUR-${now.getFullYear()}-${dd}-${mm}-${random}`;
+};
+
+export default function AddPastTourForm({ onSaved, onCancel }: { onSaved?: () => void; onCancel?: () => void }) {
+  const [form, setForm] = useState<PastTourFormState>(() => ({
     title: "",
     tourCode: "",
     departureStart: "",
@@ -34,242 +31,59 @@ export default function AddPastTourForm() {
     feedback: "",
     destination: "",
     category: Category.STUDENT,
-    tourImages: [] as File[],
-    pastSchedule: [{ date: "", title: "", description: "", imageFiles: [] as File[] }],
-  });
-
-  const handleTourImagesChange = (files: File[], urls: string[]) => {
-    setForm((prev) => ({ ...prev, tourImages: files }));
-  };
-
-  const handleScheduleImagesChange = (index: number, files: File[], urls: string[]) => {
-    const updated = [...form.pastSchedule];
-    updated[index].imageFiles = files;
-    setForm((prev) => ({ ...prev, pastSchedule: updated }));
-  };
-
-  const addScheduleDay = () => {
-    setForm((prev) => ({
-      ...prev,
-      pastSchedule: [...prev.pastSchedule, { date: "", title: "", description: "", imageFiles: [] }],
-    }));
-  };
-
-  const generateSlug = (title: string) => {
-    return slugify(title, {
-      lower: true,
-      locale: "vi",
-      remove: /[*+~.()'"!:@]/g,
-    });
-  };
-
-  const generateTourCode = () => {
-    const now = new Date();
-
-    const year = now.getFullYear();
-    const dd = String(now.getDate()).padStart(2, "0");
-    const mm = String(now.getMonth() + 1).padStart(2, "0"); // months are 0-based
-
-    const random = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-
-    return `PAST-TOUR-${year}-${dd}-${mm}-${random}`;
-  };
+    tourImageUrls: [],
+    tourImageFiles: [],
+    pastSchedule: [newPastScheduleDay()],
+  }));
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
     try {
-      e.preventDefault();
-      // Upload tour images
-      const tourImageUrls = await uploadImages(form.tourImages, "past-tour-images");
-
-      // Upload schedule images per day
-      const pastSchedule = await Promise.all(
-        form.pastSchedule.map(async (day) => {
-          const dayImageUrls = await uploadImages(day.imageFiles, "past-tour-images")
-          return {
-            date: day.date,
-            title: day.title,
-            description: day.description,
-            images: dayImageUrls,
-          }
-        })
-      )
-
-      // Build JSON payload
-      const payload = {
-        title: form.title,
-        slug: generateSlug(form.title),
-        tourCode: generateTourCode(),
-        departureStart: form.departureStart,
-        departureEnd: form.departureEnd,
-        duration: form.duration,
-        price: form.price,
-        participants: form.participants,
-        feedback: form.feedback,
-        destination: form.destination,
-        category: form.category,
-        tourImages: tourImageUrls,
-        pastSchedule,
-      }
-
-      // Send JSON to backend
+      const payload = await buildPastTourPayload(form, uploadImages);
       const res = await fetch("/api/admin/past-tours", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
+        body: JSON.stringify({
+          ...payload,
+          slug: generateSlug(form.title),
+          tourCode: form.tourCode.trim() || generateTourCode(),
+        }),
+      });
 
       if (res.ok) {
-        toast.success("Past tour submitted successfully!")
+        toast.success("Đã lưu tour. Tour đang ở trạng thái bản nháp.");
+        onSaved?.();
       } else {
-        toast.error("Failed to submit past tour")
+        toast.error("Không lưu được tour");
       }
     } catch (error) {
-      console.error(error)
-      toast.error("Unexpected error occurred happened when submitting past tour. Please try again later.")
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white  p-6 rounded-xl shadow-md space-y-4 max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Add Past Tour</h2>
-
+    <form onSubmit={handleSubmit} className="space-y-10">
       <div>
-        <label className="block font-semibold mb-1">Title</label>
-        <input type="text" value={form.title}
-               onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-               className="w-full border border-gray-400 rounded-md p-2" />
+        {onCancel && (
+          <button type="button" onClick={onCancel} className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer">
+            <ArrowLeftIcon className="size-4" />
+            Tour đã tổ chức
+          </button>
+        )}
+        <PageHeading title="Thêm tour đã tổ chức" description="Lưu lại chuyến đi đã tổ chức kèm hình ảnh để giới thiệu trên website." />
       </div>
 
-      <div>
-        <label className="block font-semibold mb-1">Tour Code</label>
-        <input type="text" value={form.tourCode}
-               onChange={(e) => setForm((prev) => ({ ...prev, tourCode: e.target.value }))}
-               className="w-full border border-gray-400 rounded-md p-2" />
+      <PastTourFields form={form} setForm={setForm} />
+
+      <div className="sticky bottom-0 -mx-4 flex items-center justify-end gap-x-3 border-t border-gray-200 bg-white/90 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        {onCancel && <Button variant="secondary" onClick={onCancel}>Hủy</Button>}
+        <Button type="submit" disabled={saving}>{saving ? "Đang lưu..." : "Lưu tour"}</Button>
       </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block font-semibold mb-1">Departure Start</label>
-          <input type="date" value={form.departureStart}
-                 onChange={(e) => setForm((prev) => ({ ...prev, departureStart: e.target.value }))}
-                 className="w-full border border-gray-400 rounded-md p-2" />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Departure End</label>
-          <input type="date" value={form.departureEnd}
-                 onChange={(e) => setForm((prev) => ({ ...prev, departureEnd: e.target.value }))}
-                 className="w-full border border-gray-400 rounded-md p-2" />
-        </div>
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">Duration (days)</label>
-        <input type="number" value={form.duration}
-               onChange={(e) => setForm((prev) => ({ ...prev, duration: e.target.value }))}
-               className="w-full border border-gray-400 rounded-md p-2" />
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">Price</label>
-        <input type="number" value={form.price}
-               onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
-               className="w-full border border-gray-400 rounded-md p-2" />
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">Participants</label>
-        <input type="number" value={form.participants}
-               onChange={(e) => setForm((prev) => ({ ...prev, participants: e.target.value }))}
-               className="w-full border border-gray-400 rounded-md p-2" />
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">Feedback</label>
-        <textarea value={form.feedback}
-                  onChange={(e) => setForm((prev) => ({ ...prev, feedback: e.target.value }))}
-                  className="w-full border border-gray-400 rounded-md p-2" />
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">Tour Images</label>
-        <ImagePicker initialFiles={[]} onChange={handleTourImagesChange} />
-      </div>
-
-      {/* Destination (optional) */}
-      <div>
-        <label htmlFor="destination">Điểm đến</label>
-        <input
-          type="text"
-          id="destination"
-          className="w-full border border-gray-400 rounded-md p-2"
-          name="destination"
-          onChange={(e) => setForm({ ...form, destination: e.target.value })}
-          placeholder="Ví dụ: Đà Nẵng"
-        />
-      </div>
-
-      {/* Category (enum) */}
-      <div>
-        <label htmlFor="category">Loại tour</label>
-        <select id="category"
-                name="category"
-                className="w-full border border-gray-400 rounded-md p-2"
-                defaultValue={Category.STUDENT}
-                value={form.category}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  setForm({ ...form, category: e.target.value as Category });
-                }}
-        >
-          <option value={Category.STUDENT}>Du lịch trải nghiệm cho HS</option>
-          <option value={Category.TEACHER}>Du lịch giành cho giáo viên</option>
-        </select>
-      </div>
-
-      <div className="border border-gray-400 rounded-md p-4 mb-4">
-        <h3 className="text-lg font-semibold">Schedule</h3>
-        {form.pastSchedule.map((day, index) => (
-          <div key={index}>
-            <label className="block font-semibold mb-1">Date</label>
-            <input type="date" value={day.date}
-                   onChange={(e) => {
-                     const updated = [...form.pastSchedule];
-                     updated[index].date = e.target.value;
-                     setForm((prev) => ({ ...prev, pastSchedule: updated }));
-                   }}
-                   className="w-full border border-gray-400 rounded-md p-2" />
-
-            <label className="block font-semibold mb-1">Location</label>
-            <input type="text" value={day.title}
-                   onChange={(e) => {
-                     const updated = [...form.pastSchedule];
-                     updated[index].title = e.target.value;
-                     setForm((prev) => ({ ...prev, pastSchedule: updated }));
-                   }}
-                   className="w-full border border-gray-400 rounded-md p-2" />
-
-            <label className="block font-semibold mb-1">Description</label>
-            <textarea value={day.description}
-                      onChange={(e) => {
-                        const updated = [...form.pastSchedule];
-                        updated[index].description = e.target.value;
-                        setForm((prev) => ({ ...prev, pastSchedule: updated }));
-                      }}
-                      className="w-full border border-gray-400 rounded-md p-2" />
-
-            <label className="block font-semibold mb-1">Schedule Images</label>
-            <ImagePicker
-              initialFiles={[]}
-              onChange={(files, urls) => handleScheduleImagesChange(index, files, urls)}
-            />
-          </div>
-        ))}
-        <button type="button" onClick={addScheduleDay} className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 text-sm">
-          <PlusIcon className="w-4 h-4" />
-          Thêm ngày
-        </button>
-      </div>
-
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Save Past Tour</button>
     </form>
   );
 }

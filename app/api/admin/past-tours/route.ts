@@ -32,6 +32,7 @@ export async function POST(req: Request) {
     price,
     participants,
     feedback,
+    destination,
     category,
     tourImages,
     pastSchedule,
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
       price: Number(price),
       participants: Number(participants) ?? null,
       feedback,
+      destination,
       tourImages,
       category: category as Category,
       pastSchedule: {

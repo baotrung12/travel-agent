@@ -1,5 +1,9 @@
 import {Editor, useEditorState} from "@tiptap/react";
 
+const toolbarButton = (active: boolean) =>
+  "rounded px-2 py-1 text-xs font-semibold cursor-pointer " +
+  (active ? "bg-brand-100 text-brand-700" : "text-gray-700 hover:bg-gray-100")
+
 export default function MenuBar({ editor }: { editor: Editor | null }) {
   if (!editor) {
     return null // or a loading spinner
@@ -37,12 +41,12 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
 
   return (
     <div className="tiptap-control-group">
-      <div className="button-group">
+      <div className="button-group flex flex-wrap gap-1">
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleBold().run()}
           disabled={!editorState.canBold}
-          className={(editorState.isBold ? 'is-active ' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isBold)}
         >
           Bold
         </button>
@@ -50,42 +54,42 @@ export default function MenuBar({ editor }: { editor: Editor | null }) {
           type="button"
           onClick={() => editor?.chain().focus().toggleItalic().run()}
           disabled={!editorState.canItalic}
-          className={(editorState.isItalic ? 'is-active' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isItalic)}
         >
           Italic
         </button>
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={(editorState.isHeading1 ? 'is-active' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isHeading1)}
         >
           H1
         </button>
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={(editorState.isHeading2 ? 'is-active' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isHeading2)}
         >
           H2
         </button>
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
-          className={(editorState.isBulletList ? 'is-active' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isBulletList)}
         >
           Bullet list
         </button>
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-          className={(editorState.isOrderedList ? 'is-active' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isOrderedList)}
         >
           Ordered list
         </button>
         <button
           type="button"
           onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-          className={(editorState.isBlockquote ? 'is-active' : '') + 'bg-gray-200 text-back px-2 py-1 font-semibold rounded-md hover:bg-gray-300 mr-2'}
+          className={toolbarButton(editorState.isBlockquote)}
         >
           Blockquote
         </button>
